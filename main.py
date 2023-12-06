@@ -2,7 +2,7 @@ import requests
 import days
 from ProgressBar import ProgressBar
 
-day = 25
+day = 1
 bUseTestInput = False
 
 if bUseTestInput:
@@ -11,7 +11,7 @@ if bUseTestInput:
     input = f.read().splitlines()
     f.close()
 else:    
-    url = 'https://adventofcode.com/2022/day/' + str(day) + '/input'
+    url = 'https://adventofcode.com/2023/day/' + str(day) + '/input'
     print("Loading input from AoC: " + url)
 
     f = open("sessioncookie.txt", "r")
