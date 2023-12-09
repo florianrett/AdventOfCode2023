@@ -47,12 +47,43 @@ def day1(input, Pbar: ProgressBar):
 
 def day2(input, Pbar: ProgressBar):
     
-    Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
+    sumIDs = 0
+    sumPowers = 0
+    for line in input:
+        bIsPossible = True
+        minRed = 0
+        minGreen = 0
+        minBlue = 0
+        ID = int(re.findall('(\d+):', line)[0])
+
+        pulls = line.split(';')
+        for pull in pulls:
+            NumBlue = re.findall('(\d+) blue', pull)
+            NumBlue = int(NumBlue[0]) if NumBlue else 0
+            NumRed = re.findall('(\d+) red', pull)
+            NumRed = int(NumRed[0]) if NumRed else 0
+            NumGreen = re.findall('(\d+) green', pull)
+            NumGreen = int(NumGreen[0]) if NumGreen else 0
+            
+            if NumRed > 12 or NumGreen > 13 or NumBlue > 14:
+                bIsPossible = False
+
+            #puzzle 2
+            minRed = max(minRed,NumRed)
+            minGreen = max(minGreen,NumGreen)
+            minBlue = max(minBlue,NumBlue)
+        
+        if bIsPossible:
+            sumIDs += ID
+
+        sumPowers += minRed * minGreen * minBlue
+    
+    
+    Pbar.StartPuzzle1(0)
     Pbar.StartPuzzle2(0)
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return sumIDs, sumPowers
 
 def day3(input, Pbar: ProgressBar):
     
