@@ -1,7 +1,6 @@
 import HelperFunctions as hf
 import HelperClasses as hc
 from ProgressBar import ProgressBar
-from HelperClasses import Number
 import typing
 import collections
 import copy
@@ -16,11 +15,35 @@ import re
 def day1(input, Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
-    Pbar.StartPuzzle2(0)
+
+    calibrationValues: list[int] = []
+    pattern = r'[a-z]'
+    line: str
+    for line in input:
+        digits = re.sub(pattern, '', line)
+        calibrationValues.append(int(digits[0]+digits[-1]))
+        Pbar.IncrementProgress()
+        
+    Pbar.StartPuzzle2(len(input))
+    calibrationValues2: list[int] = []
+    parser:dict = {'one':1, 'two':2, 'three':3,'four':4, 'five':5,'six':6,'seven':7,'eight':8,'nine':9}
+    
+    for line in input:
+        digits = re.findall(r'(?=(one|two|three|four|five|six|seven|eight|nine|[1-9]))', line)
+        first:str = digits[0]
+        last:str = digits[-1]
+        if not first.isnumeric():
+            first = parser[first]
+        if not last.isnumeric():
+            last = parser[last]
+        
+        calibrationValues2.append(10 * int(first) + int(last))
+        # print(line, first, last, calibrationValues2[-1])
+        Pbar.IncrementProgress()
+
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return sum(calibrationValues), sum(calibrationValues2)
 
 def day2(input, Pbar: ProgressBar):
     
