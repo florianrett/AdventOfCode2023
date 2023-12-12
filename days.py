@@ -86,13 +86,48 @@ def day2(input, Pbar: ProgressBar):
     return sumIDs, sumPowers
 
 def day3(input, Pbar: ProgressBar):
-    
     Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
-    Pbar.StartPuzzle2(0)
+
+    PartNumberSum = 0
+    Gears:dict[tuple,list] = {}
+    for i in range(len(input)):
+        
+        for match in re.finditer('\d+', input[i]):
+            #symbol search ranges
+            minX = max(0, match.start() - 1)
+            maxX = match.end()
+            minY = max(0, i - 1)
+            maxY = min(len(input) - 1, i + 1)
+            PartNumber = int(match.group())
+            bFoundSymbol = False
+            for y in range(minY, maxY + 1):
+                searchstr:str = input[y][minX:maxX + 1]
+                # print(searchstr)
+                if not re.fullmatch('[\d.]*', searchstr):
+                    bFoundSymbol = True
+                    # print('Found symbol in',searchstr)
+                    for gear in re.finditer('\*', searchstr):
+                        gearIdx = (minX + gear.start(), y)
+                        if gearIdx in Gears:
+                            Gears[gearIdx].append(PartNumber)
+                        else:
+                            Gears[gearIdx] = [PartNumber]
+
+            if bFoundSymbol:
+                PartNumberSum += PartNumber
+
+    Pbar.StartPuzzle2(len(input))
+
+    GearRatioSum = 0
+    for g in Gears.values():
+        if len(g) == 2:
+            GearRatioSum += g[0] * g[1]
+
+    # s = "1234a"
+    # print(re.fullmatch('[\d.]*', s))
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return PartNumberSum, GearRatioSum
 
 def day4(input, Pbar: ProgressBar):
     
