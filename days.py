@@ -132,11 +132,31 @@ def day3(input, Pbar: ProgressBar):
 def day4(input, Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
+    TotalWorth = 0
+    WonCards:dict[int,int] = {}
+    TotalCardCount = 0
+    for line in input:
+        CardNumber = int(re.search('(\d+):', line).group(1))
+        CardCount = WonCards.get(CardNumber, 0) + 1 # Total count I have won of this card
+        TotalCardCount += CardCount
+        line = line.split(':')[1]
+        winningNumbers = {int(m.group()) for m in re.finditer('\d+', line.split('|')[0])}
+        numbers = {int(m.group()) for m in re.finditer('\d+', line.split('|')[1])}
+        NumMatches = len(winningNumbers.intersection(numbers))
+        if NumMatches > 0:
+            TotalWorth += pow(2, NumMatches - 1)
+        #puzzle 2
+
+        for i in range(1, NumMatches + 1):
+            if CardNumber + i in WonCards:
+                WonCards[CardNumber+i] += CardCount
+            else:
+                WonCards[CardNumber+i] = CardCount
+
     Pbar.StartPuzzle2(0)
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return TotalWorth, TotalCardCount
 
 def day5(input, Pbar: ProgressBar):
     
