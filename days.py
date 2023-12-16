@@ -158,7 +158,58 @@ def day4(input, Pbar: ProgressBar):
 
     return TotalWorth, TotalCardCount
 
-def day5(input, Pbar: ProgressBar):
+def day5(input:list[str], Pbar: ProgressBar):
+    
+    seeds:list = [int(x) for x in re.findall('\d+', input[0])]    
+    emptyLines:list = [i for i in range(len(input)) if len(input[i]) == 0]
+
+    SeedToSoil:list[tuple[int]] = [[int(x) for x in re.findall('\d+', line)] for line in input[emptyLines[0] + 2 : emptyLines[1]]]
+    SoilToFertilizer:list[tuple[int]] = [[int(x) for x in re.findall('\d+', line)] for line in input[emptyLines[1] + 2 : emptyLines[2]]]
+    FertilizerToWater:list[tuple[int]] = [[int(x) for x in re.findall('\d+', line)] for line in input[emptyLines[2] + 2 : emptyLines[3]]]
+    WaterToLight:list[tuple[int]] = [[int(x) for x in re.findall('\d+', line)] for line in input[emptyLines[3] + 2 : emptyLines[4]]]
+    LightToTemperature:list[tuple[int]] = [[int(x) for x in re.findall('\d+', line)] for line in input[emptyLines[4] + 2 : emptyLines[5]]]
+    TemperatureToHumidity:list[tuple[int]] = [[int(x) for x in re.findall('\d+', line)] for line in input[emptyLines[5] + 2 : emptyLines[6]]]
+    HumidityToLocation:list[tuple[int]] = [[int(x) for x in re.findall('\d+', line)] for line in input[emptyLines[6] + 2 :]]
+
+    Pbar.StartPuzzle1(len(seeds))
+
+    Locations:list[int] = []
+    for s in seeds:
+        
+        Locations.append(hf.ConvertNumber(hf.ConvertNumber(hf.ConvertNumber(hf.ConvertNumber(hf.ConvertNumber(hf.ConvertNumber(hf.ConvertNumber(s, SeedToSoil), SoilToFertilizer), FertilizerToWater), WaterToLight), LightToTemperature), TemperatureToHumidity), HumidityToLocation))
+
+        Pbar.IncrementProgress()
+    
+    Pbar.StartPuzzle2(7)
+
+    SeedRanges = [(seeds[i], seeds[i+1]) for i in range(0, len(seeds), 2)]
+    SoilRanges:list[tuple] = []
+    FertRanges:list[tuple] = []
+    WaterRanges:list[tuple] = []
+    LightRanges:list[tuple] = []
+    TempRanges:list[tuple] = []
+    HumidRanges:list[tuple] = []
+    LocationRanges:list[tuple] = []
+    for r in SeedRanges:
+        SoilRanges += hf.ConvertNumberRangeRec(r[0], r[1], SeedToSoil)
+    for r in SoilRanges:
+        FertRanges += hf.ConvertNumberRangeRec(r[0], r[1], SoilToFertilizer)
+    for r in FertRanges:
+        WaterRanges += hf.ConvertNumberRangeRec(r[0], r[1], FertilizerToWater)
+    for r in WaterRanges:
+        LightRanges += hf.ConvertNumberRangeRec(r[0], r[1], WaterToLight)
+    for r in LightRanges:
+        TempRanges += hf.ConvertNumberRangeRec(r[0], r[1], LightToTemperature)
+    for r in TempRanges:
+        HumidRanges += hf.ConvertNumberRangeRec(r[0], r[1], TemperatureToHumidity)
+    for r in HumidRanges:
+        LocationRanges += hf.ConvertNumberRangeRec(r[0], r[1], HumidityToLocation)
+
+    Pbar.FinishPuzzle2()
+
+    return min(Locations), min([x[0] for x in LocationRanges])
+
+def day6(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
@@ -167,7 +218,7 @@ def day5(input, Pbar: ProgressBar):
 
     return -1, -1
 
-def day6(input, Pbar: ProgressBar):
+def day7(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
@@ -176,7 +227,7 @@ def day6(input, Pbar: ProgressBar):
 
     return -1, -1
 
-def day7(input, Pbar: ProgressBar):
+def day8(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
@@ -185,7 +236,7 @@ def day7(input, Pbar: ProgressBar):
 
     return -1, -1
 
-def day8(input, Pbar: ProgressBar):
+def day9(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
@@ -194,7 +245,7 @@ def day8(input, Pbar: ProgressBar):
 
     return -1, -1
 
-def day9(input, Pbar: ProgressBar):
+def day10(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
@@ -203,7 +254,7 @@ def day9(input, Pbar: ProgressBar):
 
     return -1, -1
 
-def day10(input, Pbar: ProgressBar):
+def day11(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
@@ -212,7 +263,7 @@ def day10(input, Pbar: ProgressBar):
 
     return -1, -1
 
-def day11(input, Pbar: ProgressBar):
+def day12(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
@@ -221,7 +272,7 @@ def day11(input, Pbar: ProgressBar):
 
     return -1, -1
 
-def day12(input, Pbar: ProgressBar):
+def day13(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
@@ -230,7 +281,7 @@ def day12(input, Pbar: ProgressBar):
 
     return -1, -1
 
-def day13(input, Pbar: ProgressBar):
+def day14(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
@@ -239,7 +290,7 @@ def day13(input, Pbar: ProgressBar):
 
     return -1, -1
 
-def day14(input, Pbar: ProgressBar):
+def day15(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
@@ -248,7 +299,7 @@ def day14(input, Pbar: ProgressBar):
 
     return -1, -1
 
-def day15(input, Pbar: ProgressBar):
+def day16(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
@@ -257,7 +308,7 @@ def day15(input, Pbar: ProgressBar):
 
     return -1, -1
 
-def day16(input, Pbar: ProgressBar):
+def day17(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
@@ -266,7 +317,7 @@ def day16(input, Pbar: ProgressBar):
 
     return -1, -1
 
-def day17(input, Pbar: ProgressBar):
+def day18(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
@@ -275,7 +326,7 @@ def day17(input, Pbar: ProgressBar):
 
     return -1, -1
 
-def day18(input, Pbar: ProgressBar):
+def day19(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
@@ -284,7 +335,7 @@ def day18(input, Pbar: ProgressBar):
 
     return -1, -1
 
-def day19(input, Pbar: ProgressBar):
+def day20(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
@@ -293,7 +344,7 @@ def day19(input, Pbar: ProgressBar):
 
     return -1, -1
 
-def day20(input, Pbar: ProgressBar):
+def day21(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
@@ -302,7 +353,7 @@ def day20(input, Pbar: ProgressBar):
 
     return -1, -1
 
-def day21(input, Pbar: ProgressBar):
+def day22(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
@@ -311,7 +362,7 @@ def day21(input, Pbar: ProgressBar):
 
     return -1, -1
 
-def day22(input, Pbar: ProgressBar):
+def day23(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
@@ -320,7 +371,7 @@ def day22(input, Pbar: ProgressBar):
 
     return -1, -1
 
-def day23(input, Pbar: ProgressBar):
+def day24(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
@@ -329,16 +380,7 @@ def day23(input, Pbar: ProgressBar):
 
     return -1, -1
 
-def day24(input, Pbar: ProgressBar):
-    
-    Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
-    Pbar.StartPuzzle2(0)
-    Pbar.FinishPuzzle2()
-
-    return -1, -1
-
-def day25(input, Pbar: ProgressBar):
+def day25(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
     Pbar.IncrementProgress()
