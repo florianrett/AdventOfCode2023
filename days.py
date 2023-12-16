@@ -210,13 +210,54 @@ def day5(input:list[str], Pbar: ProgressBar):
     return min(Locations), min([x[0] for x in LocationRanges])
 
 def day6(input:list[str], Pbar: ProgressBar):
+
+    Times:list[int] = [int(x) for x in re.findall('\d+', input[0])]
+    Records:list[int] = [int(x) for x in re.findall('\d+', input[1])]
     
-    Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
+    Pbar.StartPuzzle1(sum(Times))
+
+    WinningScenarios:list[int] = [0] * len(Times)
+    for race in range(len(Times)):
+        time = Times[race]
+        record = Records[race]
+        for i in range(time):
+            distance = i * (time - i)
+            if distance > record:
+                WinningScenarios[race] += 1
+
     Pbar.StartPuzzle2(0)
+    time = int(re.search('\d+', input[0].replace(' ', '')).group())
+    record = int(re.search('\d+', input[1].replace(' ', '')).group())
+    
+    FirstWin:int = -1
+    LastWin:int = -1
+    for i in range(0, time, int(time / 100)):
+        distance = i * (time - i)
+        if distance > record:
+            if FirstWin < 0:
+                FirstWin = i
+            else:
+                LastWin = i
+    while True:
+        i = FirstWin - 1
+        distance = i * (time - i)
+        if distance > record:
+            FirstWin = i
+        else:
+            break
+    while True:
+        i = LastWin + 1
+        distance = i * (time - i)
+        if distance > record:
+            LastWin = i
+        else:
+            break
+            
+    WinningScenarios2:int = LastWin - FirstWin + 1
+
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return np.prod(WinningScenarios), WinningScenarios2
 
 def day7(input:list[str], Pbar: ProgressBar):
     
