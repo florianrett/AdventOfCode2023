@@ -1,7 +1,4 @@
-import HelperFunctions as hf
-import HelperClasses as hc
 from ProgressBar import ProgressBar
-import typing
 import collections
 import copy
 import numpy as np
@@ -159,6 +156,7 @@ def day4(input, Pbar: ProgressBar):
     return TotalWorth, TotalCardCount
 
 def day5(input:list[str], Pbar: ProgressBar):
+    from HelperFunctions import ConvertNumber,ConvertNumberRangeRec
     
     seeds:list = [int(x) for x in re.findall('\d+', input[0])]    
     emptyLines:list = [i for i in range(len(input)) if len(input[i]) == 0]
@@ -176,7 +174,7 @@ def day5(input:list[str], Pbar: ProgressBar):
     Locations:list[int] = []
     for s in seeds:
         
-        Locations.append(hf.ConvertNumber(hf.ConvertNumber(hf.ConvertNumber(hf.ConvertNumber(hf.ConvertNumber(hf.ConvertNumber(hf.ConvertNumber(s, SeedToSoil), SoilToFertilizer), FertilizerToWater), WaterToLight), LightToTemperature), TemperatureToHumidity), HumidityToLocation))
+        Locations.append(ConvertNumber(ConvertNumber(ConvertNumber(ConvertNumber(ConvertNumber(ConvertNumber(ConvertNumber(s, SeedToSoil), SoilToFertilizer), FertilizerToWater), WaterToLight), LightToTemperature), TemperatureToHumidity), HumidityToLocation))
 
         Pbar.IncrementProgress()
     
@@ -191,19 +189,19 @@ def day5(input:list[str], Pbar: ProgressBar):
     HumidRanges:list[tuple] = []
     LocationRanges:list[tuple] = []
     for r in SeedRanges:
-        SoilRanges += hf.ConvertNumberRangeRec(r[0], r[1], SeedToSoil)
+        SoilRanges += ConvertNumberRangeRec(r[0], r[1], SeedToSoil)
     for r in SoilRanges:
-        FertRanges += hf.ConvertNumberRangeRec(r[0], r[1], SoilToFertilizer)
+        FertRanges += ConvertNumberRangeRec(r[0], r[1], SoilToFertilizer)
     for r in FertRanges:
-        WaterRanges += hf.ConvertNumberRangeRec(r[0], r[1], FertilizerToWater)
+        WaterRanges += ConvertNumberRangeRec(r[0], r[1], FertilizerToWater)
     for r in WaterRanges:
-        LightRanges += hf.ConvertNumberRangeRec(r[0], r[1], WaterToLight)
+        LightRanges += ConvertNumberRangeRec(r[0], r[1], WaterToLight)
     for r in LightRanges:
-        TempRanges += hf.ConvertNumberRangeRec(r[0], r[1], LightToTemperature)
+        TempRanges += ConvertNumberRangeRec(r[0], r[1], LightToTemperature)
     for r in TempRanges:
-        HumidRanges += hf.ConvertNumberRangeRec(r[0], r[1], TemperatureToHumidity)
+        HumidRanges += ConvertNumberRangeRec(r[0], r[1], TemperatureToHumidity)
     for r in HumidRanges:
-        LocationRanges += hf.ConvertNumberRangeRec(r[0], r[1], HumidityToLocation)
+        LocationRanges += ConvertNumberRangeRec(r[0], r[1], HumidityToLocation)
 
     Pbar.FinishPuzzle2()
 
@@ -260,13 +258,50 @@ def day6(input:list[str], Pbar: ProgressBar):
     return np.prod(WinningScenarios), WinningScenarios2
 
 def day7(input:list[str], Pbar: ProgressBar):
+    from HelperClasses import CamelCardHand
     
     Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
-    Pbar.StartPuzzle2(0)
+
+    OrderedHands:list[CamelCardHand] = []
+    for line in input:
+        Hand:CamelCardHand = CamelCardHand(line, False)
+        bInserted = False
+        for i in range(len(OrderedHands)):
+            if OrderedHands[i].IsHigher(Hand):
+                OrderedHands.insert(i, copy.copy(Hand))
+                bInserted = True
+                break
+        if not bInserted:
+            OrderedHands.append(copy.copy(Hand))
+
+        Pbar.IncrementProgress()
+    
+    TotalWinnings = 0
+    for i in range(len(OrderedHands)):
+        TotalWinnings += (i + 1) * OrderedHands[i].Bid
+
+    Pbar.StartPuzzle2(len(input))
+    OrderedHands.clear()
+    for line in input:
+        Hand:CamelCardHand = CamelCardHand(line, True)
+        bInserted = False
+        for i in range(len(OrderedHands)):
+            if OrderedHands[i].IsHigher(Hand):
+                OrderedHands.insert(i, copy.copy(Hand))
+                bInserted = True
+                break
+        if not bInserted:
+            OrderedHands.append(copy.copy(Hand))
+
+        Pbar.IncrementProgress()
+
+    TotalWinningsJokers = 0
+    for i in range(len(OrderedHands)):
+        TotalWinningsJokers += (i + 1) * OrderedHands[i].Bid
+
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return TotalWinnings, TotalWinningsJokers
 
 def day8(input:list[str], Pbar: ProgressBar):
     
