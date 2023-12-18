@@ -7,3 +7,8 @@ Automatically retrieving custom puzzle input from AoC requires setting a session
 tldr: Browser console -> Network -> open/refresh puzzle input page -> read session cookie from request header
 
 The session cookie (without 'session=') has to be copied into a file called 'sessioncookie.txt' in the project's root folder.
+
+# Personal Goals
+This year I set myself some specific goals to achieve while solving the puzzles:
+- Get more familiar with regular expressions, especially for parsing inputs
+- Learn to use python's collections library 
