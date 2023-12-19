@@ -352,11 +352,39 @@ def day8(input:list[str], Pbar: ProgressBar):
 def day9(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(len(input))
+
+    TotalExtrapolatedValues = 0
+    TotalHistoryValues = 0 # puzzle 2
+    for line in input:
+        sequences:list[list[int]] = []
+        sequences.append([int(x) for x in re.findall('-?\d+', line)])
+
+        while True:
+            lastSequence = sequences[-1]
+            sequences.append([])
+            bOnlyZeros:bool = True
+            for i in range(len(lastSequence) - 1):
+                diff = lastSequence[i+1] - lastSequence[i]
+                sequences[-1].append(diff)
+                if diff:
+                    bOnlyZeros = False
+            if bOnlyZeros:
+                break
+
+        nextValue = 0
+        historyValue = 0 # puzzle 2
+        for i in reversed(range(len(sequences) - 1)):
+            nextValue += sequences[i][-1]
+            historyValue = sequences[i][0] - historyValue
+        TotalExtrapolatedValues += nextValue
+        TotalHistoryValues += historyValue
+
+
     Pbar.IncrementProgress()
     Pbar.StartPuzzle2(0)
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return TotalExtrapolatedValues, TotalHistoryValues
 
 def day10(input:list[str], Pbar: ProgressBar):
     
