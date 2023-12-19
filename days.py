@@ -388,12 +388,229 @@ def day9(input:list[str], Pbar: ProgressBar):
 
 def day10(input:list[str], Pbar: ProgressBar):
     
-    Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
-    Pbar.StartPuzzle2(0)
+    Pbar.StartPuzzle1(0)
+
+    StartPos:tuple = (-1, -1)
+    for y in range(len(input)):
+        x = input[y].find('S')
+        if x >= 0:
+            StartPos = (x, y)
+            break
+    
+    pos = StartPos
+    Loop:list[tuple] = [pos]
+    dir = 0 #direction current position was entered; 0 up, 1 right, 2 down, 3 left
+    # determine first loop tile
+    StartConnections = []
+    nPos = (StartPos[0], StartPos[1] - 1)
+    neighbor = input[nPos[1]][nPos[0]]
+    if neighbor == '|' or neighbor == 'F' or neighbor == '7':
+        StartConnections.append(0)
+        pos = nPos
+        dir = 0
+    nPos = (StartPos[0] + 1, StartPos[1])
+    neighbor = input[nPos[1]][nPos[0]]
+    if neighbor == '-' or neighbor == '7' or neighbor == 'J':
+        StartConnections.append(1)
+        pos = nPos
+        dir = 1
+    nPos = (StartPos[0], StartPos[1] + 1)
+    neighbor = input[nPos[1]][nPos[0]]
+    if neighbor == '|' or neighbor == 'J' or neighbor == 'L':
+        StartConnections.append(2)
+        pos = nPos
+        dir = 2
+    nPos = (StartPos[0] - 1, StartPos[1])
+    neighbor = input[nPos[1]][nPos[0]]
+    if neighbor == '-' or neighbor == 'F' or neighbor == 'L':
+        StartConnections.append(3)
+        pos = nPos
+        dir = 3
+
+    StartTile = ''
+    if 0 in StartConnections and 1 in StartConnections:
+        StartTile = 'L'
+    elif 0 in StartConnections and 2 in StartConnections:
+        StartTile = '|'
+    elif 0 in StartConnections and 3 in StartConnections:
+        StartTile = 'J'
+    elif 1 in StartConnections and 2 in StartConnections:
+        StartTile = 'F'
+    elif 1 in StartConnections and 3 in StartConnections:
+        StartTile = '-'
+    elif 2 in StartConnections and 3 in StartConnections:
+        StartTile = '7'
+    else:
+        print("Invalid start tile detected!")
+
+    while True:
+        Loop.append(pos)
+        CurrentTile = input[pos[1]][pos[0]]
+        if CurrentTile == '-':
+            if dir == 1:
+                pos = (pos[0] + 1, pos[1])
+            else:
+                pos = (pos[0] - 1, pos[1])
+            pass
+        elif CurrentTile == '|':
+            if dir == 0:
+                pos = (pos[0], pos[1] - 1)
+            else:
+                pos = (pos[0], pos[1] + 1)
+            pass
+        elif CurrentTile == '7':
+            if dir == 1:
+                dir = 2
+                pos = (pos[0], pos[1] + 1)
+            else:
+                dir = 3
+                pos = (pos[0] - 1, pos[1])
+            pass
+        elif CurrentTile == 'J':
+            if dir == 1:
+                dir = 0
+                pos = (pos[0], pos[1] - 1)
+            else:
+                dir = 3
+                pos = (pos[0] - 1, pos[1])
+            pass
+        elif CurrentTile == 'L':
+            if dir == 2:
+                dir = 1
+                pos = (pos[0] + 1, pos[1])
+            else:
+                dir = 0
+                pos = (pos[0], pos[1] - 1)
+            pass
+        elif CurrentTile == 'F':
+            if dir == 0:
+                dir = 1
+                pos = (pos[0] + 1, pos[1])
+            else:
+                dir = 2
+                pos = (pos[0], pos[1] + 1)
+            pass
+        if pos == StartPos:
+            break
+        
+    FarthestDistance = len(Loop) // 2
+
+    SizeX = len(input[0])
+    SizeY = len(input)
+
+    Pbar.StartPuzzle2(SizeX * SizeY)
+
+    LoopSet:set = set(Loop)
+    # find all tiles outside the loop
+    OutsideTiles:set[tuple] = set()
+    HandledLoopTiles:set[tuple] = set()
+    Candidates:set[tuple] = set() # 3rd tuple index indicates which direction is outide the loop: 0 up, 1 right, 2 down, 3 left
+
+    for x in range(SizeX):
+        Candidates.add((x, 0, 0))
+        Candidates.add((x, SizeY - 1, 2))
+    for y in range(SizeY):
+        Candidates.add((0, y, 3))
+        Candidates.add((SizeX - 1, y, 1))
+
+    while not len(Candidates) == 0:
+        NewCandidates:set[tuple] = set()
+        for c in Candidates:
+            x = c[0]
+            y = c[1]
+            dir = c[2]
+            if (x, y) in OutsideTiles or (x, y) in HandledLoopTiles:
+                continue
+            if (x, y) in LoopSet:
+                tile = input[y][x]
+                if tile == 'S':
+                    tile = StartTile
+                if tile == 'F':
+                    if dir == 0 or dir == 3:
+                        NewCandidates.add((x, y-1, 2, x, y))
+                        NewCandidates.add((x-1, y, 1, x, y))
+                        NewCandidates.add((x+1, y, 0, x, y))
+                        NewCandidates.add((x, y+1, 3, x, y))
+                    elif dir == 1 or dir == 2:
+                        NewCandidates.add((x+1, y, 2, x, y))
+                        NewCandidates.add((x, y+1, 1, x, y))
+                elif tile == 'J':
+                    if dir == 0 or dir == 3:
+                        NewCandidates.add((x, y-1, 3, x, y))
+                        NewCandidates.add((x-1, y, 0, x, y))
+                    elif dir == 1 or dir == 2:
+                        NewCandidates.add((x+1, y, 3, x, y))
+                        NewCandidates.add((x, y+1, 0, x, y))
+                        NewCandidates.add((x, y-1, 1, x, y))
+                        NewCandidates.add((x-1, y, 2, x, y))
+                elif tile == 'L':
+                    if dir == 0 or dir == 1:
+                        NewCandidates.add((x, y-1, 1, x, y))
+                        NewCandidates.add((x+1, y, 0, x, y))
+                    elif dir == 2 or dir == 3:
+                        NewCandidates.add((x, y+1, 0, x, y))
+                        NewCandidates.add((x-1, y, 1, x, y))
+                        NewCandidates.add((x, y-1, 3, x, y))
+                        NewCandidates.add((x+1, y, 2, x, y))
+                elif tile == '7':
+                    if dir == 0 or dir == 1:
+                        NewCandidates.add((x, y-1, 2, x, y))
+                        NewCandidates.add((x+1, y, 3, x, y))
+                        NewCandidates.add((x-1, y, 0, x, y))
+                        NewCandidates.add((x, y+1, 1, x, y))
+                    elif dir == 2 or dir == 3:
+                        NewCandidates.add((x, y+1, 3, x, y))
+                        NewCandidates.add((x-1, y, 2, x, y))
+                elif tile == '|':
+                    if dir == 1:
+                        NewCandidates.add((x, y-1, 1, x, y))
+                        NewCandidates.add((x, y+1, 1, x, y))
+                    elif dir == 3:
+                        NewCandidates.add((x, y-1, 3, x, y))
+                        NewCandidates.add((x, y+1, 3, x, y))
+                    else:
+                        print("Invalid Candidate:", x, y, dir)
+                elif tile == '-':
+                    if dir == 0:
+                        NewCandidates.add((x-1, y, 0, x, y))
+                        NewCandidates.add((x+1, y, 0, x, y))
+                    elif dir == 2:
+                        NewCandidates.add((x-1, y, 2, x, y))
+                        NewCandidates.add((x+1, y, 2, x, y))
+                    else:
+                        print("Invalid Candidate:", x, y, dir)                            
+
+                HandledLoopTiles.add((x, y))
+                continue
+            
+            OutsideTiles.add((x, y))
+            NewCandidates.add((x - 1, y, 1))
+            NewCandidates.add((x + 1, y, 3))
+            NewCandidates.add((x, y - 1, 2))
+            NewCandidates.add((x, y + 1, 0))
+
+        Candidates.clear()
+        for n in NewCandidates:
+            if n[0] > 0 and n[0] < SizeX and n[1] > 0 and n[1] < SizeY:
+                Candidates.add(n)
+
+    # for y in range(SizeY):
+    #     OutputString:str = ""
+    #     for x in range(SizeX):
+    #         pos = (x, y)
+    #         if pos in OutsideTiles:
+    #             OutputString += "O"
+    #         elif pos in LoopSet:
+    #             OutputString += input[y][x]
+    #         else:
+    #             OutputString += "I"
+    #     print(OutputString)
+
+    NumEnclosedTiles = SizeX * SizeY - len(LoopSet) - len(OutsideTiles)
+
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return FarthestDistance, NumEnclosedTiles
 
 def day11(input:list[str], Pbar: ProgressBar):
     
