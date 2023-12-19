@@ -304,13 +304,50 @@ def day7(input:list[str], Pbar: ProgressBar):
     return TotalWinnings, TotalWinningsJokers
 
 def day8(input:list[str], Pbar: ProgressBar):
+    from HelperClasses import NodeSolver
+    Pbar.StartPuzzle1(0)
     
-    Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
+    Instructions:list[bool] = [x == 'R' for x in input[0]]
+    NumInstructions:int = len(Instructions)
+    for i in range(2, len(input)):
+        nodes = re.findall('[A-Z12]+', input[i])
+        NodeSolver.Network[nodes[0]] = (nodes[1], nodes[2])
+
+    NumSteps:int = 0
+    Solver:NodeSolver = NodeSolver('AAA')
+    while not Solver.IsSolved():
+        CurrentInstruction = Instructions[NumSteps % NumInstructions]
+        Solver.Step(CurrentInstruction)
+        NumSteps += 1
+    
     Pbar.StartPuzzle2(0)
+
+    Solvers:list[NodeSolver] = []
+    for node in NodeSolver.Network:
+        if re.match('..A$', node):
+            Solvers.append(NodeSolver(node))
+
+    LoopLengths:list[np.int64] = []
+    RemainingSolvers:list[int] = [x for x in range(len(Solvers))]
+    NumSteps2:int = 0
+    while len(RemainingSolvers) > 0:
+        InstructionIndex = NumSteps2 % NumInstructions
+        CurrentInstruction = Instructions[InstructionIndex]
+        NumSteps2 += 1
+        ToBeRemoved = []
+        for i in RemainingSolvers:
+            Solvers[i].Step(CurrentInstruction)
+            if Solvers[i].IsSolved2():
+                ToBeRemoved.append(i)
+                LoopLengths.append(NumSteps2)
+        for i in ToBeRemoved:            
+            RemainingSolvers.remove(i)
+
+    Solution2:np.int64 = np.lcm.reduce(LoopLengths, dtype=object)
+
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return NumSteps, Solution2
 
 def day9(input:list[str], Pbar: ProgressBar):
     

@@ -4,6 +4,7 @@ import copy
 from math import floor
 from math import ceil
 import numpy as np
+import re
 
 class CamelCardHand:
 
@@ -89,3 +90,21 @@ class CamelCardHand:
                 return False
         
         return False
+
+class NodeSolver:
+    Network:dict[str,tuple:str] = {}
+    
+    def __init__(self, StartNode:str, ) -> None:
+        self.InitialNode = StartNode
+        self.CurrentNode:str = StartNode
+        pass
+
+    def Step(self, bGoRight:bool) -> None:
+        self.CurrentNode = self.Network[self.CurrentNode][bGoRight]
+        pass
+
+    def IsSolved(self) -> bool:
+        return self.CurrentNode == 'ZZZ'
+    
+    def IsSolved2(self) -> bool:
+        return self.CurrentNode[-1] == 'Z'
