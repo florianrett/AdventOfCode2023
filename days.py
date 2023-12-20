@@ -614,12 +614,53 @@ def day10(input:list[str], Pbar: ProgressBar):
 
 def day11(input:list[str], Pbar: ProgressBar):
     
-    Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
+    Pbar.StartPuzzle1(0)
+
+    emptyRows:set[int] = set()
+    emptyColumns:set[int] = set()
+
+    for row in range(len(input)):
+        line = input[row]
+        if re.fullmatch('\.*', line):
+            emptyRows.add(row)
+    for column in range(len(input[0])):
+        bIsEmpty = True
+        for row in input:
+            if row[column] != '.':
+                bIsEmpty = False
+                break
+        if bIsEmpty:
+            emptyColumns.add(column)
+    
+    galaxies:list[tuple] = []
+    for y in range(len(input)):
+        for x in range(len(input[y])):
+            if input[y][x] == '#':
+                galaxies.append((x, y))
+
+    shortestPathsSum = 0
+    shortestPaths2 = 0
+    for pair in combinations(galaxies, 2):
+        x1 = pair[0][0]
+        x2 = pair[1][0]
+        y1 = pair[0][1]
+        y2 = pair[1][1]
+        crossedColumns = set(range(min(x1, x2), max(x1, x2)))
+        crossedRows = set(range(min(y1, y2), max(y1, y2)))
+        expansionX = len(crossedColumns.intersection(emptyColumns))
+        expansionY = len(crossedRows.intersection(emptyRows))
+        distanceX = abs(x1 - x2)
+        distanceY = abs(y1 - y2)
+
+        # print(pair, distanceX, distanceY, expansionX, expansionY)
+
+        shortestPathsSum += distanceX + distanceY + expansionX + expansionY
+        shortestPaths2 += distanceX + distanceY + (expansionX + expansionY) * 999999
+
     Pbar.StartPuzzle2(0)
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return shortestPathsSum, shortestPaths2
 
 def day12(input:list[str], Pbar: ProgressBar):
     
