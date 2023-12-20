@@ -1,5 +1,6 @@
 import collections
 import copy
+import itertools
 # from HelperClasses import Number
 from ProgressBar import ProgressBar
 
@@ -73,4 +74,20 @@ def CalculatePossibleArrangementsRec(record:str, groups:list[int], groupSize:int
     memoCache[(record, tuple(newGroups), groupSize)] = result
     return result
     
-            
+# These 2 functions are an example for using itertools for brute forcing, from: https://www.reddit.com/r/adventofcode/comments/18gqqbh/comment/kd2a3du/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+def match(records: str, nums: list[int]) -> bool:
+    return nums == [
+        sum(1 for _ in grouper)
+        for key, grouper in itertools.groupby(records)
+        if key == "#"
+    ]
+
+def brute_force(records: str, nums: list[int]) -> int:
+    gen = ("#." if letter == "?" else letter for letter in records)
+    # print(gen)
+    # for g in gen:
+    #     print(g)
+    # print("prod")
+    # for p in itertools.product(*gen):
+    #     print(p)
+    return sum(match(candidate, nums) for candidate in itertools.product(*gen))
