@@ -5,7 +5,7 @@ import numpy as np
 import time
 import ast
 import math
-from itertools import combinations, permutations
+from itertools import combinations, permutations, repeat
 import operator
 import re
 
@@ -663,13 +663,34 @@ def day11(input:list[str], Pbar: ProgressBar):
     return shortestPathsSum, shortestPaths2
 
 def day12(input:list[str], Pbar: ProgressBar):
+    from HelperFunctions import CalculatePossibleArrangementsRec
     
     Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
-    Pbar.StartPuzzle2(0)
+
+    PossibleArrangements = 0
+    for line in input:
+        record = re.match('[\?#\.]*', line).group()
+        groups = [int(x) for x in line.split(' ')[1].split(',')]
+        MemoCache:dict[str,int] = {}
+        PossibleArrangements += CalculatePossibleArrangementsRec(record, groups, 0, MemoCache)
+        Pbar.IncrementProgress()
+
+    Pbar.StartPuzzle2(len(input))
+
+    PossibleArrangements2 = 0
+    for line in input:
+        record = re.match('[\?#\.]*', line).group()
+        groups = [int(x) for x in line.split(' ')[1].split(',')]
+        record += 4* ("?" + record)
+        groups *= 5
+
+        MemoCache:dict[str,int] = {}
+        PossibleArrangements2 += CalculatePossibleArrangementsRec(record, groups, 0, MemoCache)
+        Pbar.IncrementProgress()
+
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return PossibleArrangements, PossibleArrangements2
 
 def day13(input:list[str], Pbar: ProgressBar):
     

@@ -31,3 +31,46 @@ def ConvertNumberRangeRec(RangeStart:int, RangeLength:int, Map:dict[tuple[int]])
     
     minDistance = min(distances)
     return [(RangeStart, minDistance)] + ConvertNumberRangeRec(RangeStart + minDistance, RangeLength - minDistance, Map)
+
+# Day 12
+def CalculatePossibleArrangementsRec(record:str, groups:list[int], groupSize:int, memoCache:dict[str,int]) -> int:
+
+    CacheKey = (record, tuple(groups), groupSize)
+    if CacheKey in memoCache:
+        # print("Cache hit")
+        return memoCache[CacheKey]
+
+    # print(record, groups, groupSize)
+
+    if len(record) == 0:
+        if len(groups) == 0:
+            return 1
+        else:
+            if len(groups) == 1 and groupSize == groups[0]:
+                return 1
+            else:
+                return 0
+    
+    newGroups = copy.copy(groups)
+    if record[0] == '?':
+        result = CalculatePossibleArrangementsRec("#" + record[1:], newGroups, groupSize, memoCache) + CalculatePossibleArrangementsRec("." + record[1:], newGroups, groupSize, memoCache)
+    
+    elif record[0] == '#':
+        if len(newGroups) == 0:
+            result = 0
+        else:
+            result = CalculatePossibleArrangementsRec(record[1:], newGroups, groupSize + 1, memoCache)
+    elif record[0] == '.':
+        if groupSize > 0:
+            if groupSize == newGroups.pop(0):
+                result = CalculatePossibleArrangementsRec(record[1:], newGroups, 0, memoCache)
+            else:
+                result = 0
+        else:
+            result = CalculatePossibleArrangementsRec(record[1:], newGroups, 0, memoCache)
+    
+    
+    memoCache[(record, tuple(newGroups), groupSize)] = result
+    return result
+    
+            
