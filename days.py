@@ -763,13 +763,118 @@ def day13(input:list[str], Pbar: ProgressBar):
     return Sum, Sum2
 
 def day14(input:list[str], Pbar: ProgressBar):
+    from itertools import product
     
-    Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
-    Pbar.StartPuzzle2(0)
+    platform:dict[tuple,str] = {}
+    stones:set[tuple] = set()
+    rocks:set[tuple] = set()
+    for x, y in product(range(len(input[0])), range(len(input))):
+        if input[y][x] == "O":
+            stones.add((x, y))
+        elif input[y][x] == "#":
+            rocks.add((x, y))
+
+    Pbar.StartPuzzle1(0)
+    load = 0
+    numrows = len(input)
+    numColumns = len(input[0])
+
+    oldStones = copy.copy(stones)
+    for (x, y) in oldStones:
+        testRow, newRow = y, y
+        while testRow > 0:
+            coords = (x, testRow - 1)
+            if coords in rocks:
+                break
+            elif coords in stones:
+                testRow -= 1
+            else:
+                testRow -= 1
+                newRow = testRow
+        stones.remove((x, y))
+        stones.add((x, newRow))
+        load += numrows - newRow
+
+    NumIterations = 1000000000
+    Pbar.StartPuzzle2(NumIterations)
+    coords = list(product(range(numColumns), range(numrows)))
+    knownStoneConfigs:dict[frozenset, int] = {} 
+    for i in range(NumIterations):
+        # north
+        oldStones = copy.copy(stones)
+        for (x, y) in oldStones:
+            testRow, newRow = y, y
+            while testRow > 0:
+                coords = (x, testRow - 1)
+                if coords in rocks:
+                    break
+                elif coords in stones:
+                    testRow -= 1
+                else:
+                    testRow -= 1
+                    newRow = testRow
+            stones.remove((x, y))
+            stones.add((x, newRow))
+        # west
+        oldStones = copy.copy(stones)
+        for (x, y) in oldStones:
+            testCol, newCol = x, x
+            while testCol > 0:
+                coords = (testCol - 1, y)
+                if coords in rocks:
+                    break
+                elif coords in stones:
+                    testCol -= 1
+                else:
+                    testCol -= 1
+                    newCol = testCol
+            stones.remove((x, y))
+            stones.add((newCol, y))
+        # south
+        oldStones = copy.copy(stones)
+        for (x, y) in oldStones:
+            testRow, newRow = y, y
+            while testRow + 1 < numrows:
+                coords = (x, testRow + 1)
+                if coords in rocks:
+                    break
+                elif coords in stones:
+                    testRow += 1
+                else:
+                    testRow += 1
+                    newRow = testRow
+            stones.remove((x, y))
+            stones.add((x, newRow))
+        # east
+        oldStones = copy.copy(stones)
+        for (x, y) in oldStones:
+            testCol, newCol = x, x
+            while testCol + 1 < numColumns:
+                coords = (testCol + 1, y)
+                if coords in rocks:
+                    break
+                elif coords in stones:
+                    testCol += 1
+                else:
+                    testCol += 1
+                    newCol = testCol
+            stones.remove((x, y))
+            stones.add((newCol, y))
+
+        Pbar.IncrementProgress()
+        
+        stoneConfig = frozenset(stones)
+        if stoneConfig in knownStoneConfigs:
+            cycleLength = i - knownStoneConfigs[stoneConfig]
+            if (NumIterations - 1 - i) % cycleLength == 0:
+                break
+        knownStoneConfigs[stoneConfig] = i
+
+    load2 = sum([numrows - y for (x, y) in stones])
+
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return load, load2
 
 def day15(input:list[str], Pbar: ProgressBar):
     
