@@ -5,7 +5,7 @@ import numpy as np
 import time
 import ast
 import math
-from itertools import combinations, permutations, repeat
+from itertools import combinations, permutations, repeat, groupby
 import operator
 import re
 
@@ -694,12 +694,73 @@ def day12(input:list[str], Pbar: ProgressBar):
 
 def day13(input:list[str], Pbar: ProgressBar):
     
-    Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
-    Pbar.StartPuzzle2(0)
+
+    blocks = [block for block in [list(group) for k, group in groupby(input, lambda x: x == '')] if len(block) > 1]
+    Pbar.StartPuzzle1(len(blocks))
+
+    Sum = 0
+    b = 0
+    for rows in blocks:
+        # find horizontal reflection lines
+        for i in range(0, len(rows) - 1):
+            reflects = True
+            for j in range(min(i + 1, len(rows) - i - 1)):
+                # print(i, j)
+                if rows[i-j] != rows[i+j+1]:
+                    reflects = False
+                    break
+            if reflects:
+                # print("reflection row found at index", i)
+                Sum += 100 * (i + 1)
+
+        # find vertical reflection lines
+        columns = [''.join([row[c] for row in rows]) for c in range(len(rows[0]))]
+        for i in range(0, len(columns) - 1):
+            reflects = True
+            for j in range(min(i + 1, len(columns) - i - 1)):
+                if columns[i-j] != columns[i+j+1]:
+                    reflects = False
+                    break
+            if reflects:
+                # print("reflection column found at index", i)
+                Sum += i + 1
+        
+        Pbar.IncrementProgress()
+
+    Pbar.StartPuzzle2(len(blocks))
+    Sum2 = 0
+    for rows in blocks:
+        # find horizontal reflection lines
+        rowlength =  len(rows[0])
+        for i in range(0, len(rows) - 1):
+            smudges = 0
+            for j in range(min(i + 1, len(rows) - i - 1)):
+                # print(i, j)
+                smudges += sum([1 for x in range(rowlength) if rows[i-j][x] != rows[i+j+1][x]])
+                if smudges > 1:
+                    break
+            if smudges == 1:
+                # print("reflection row found at index", i)
+                Sum2 += 100 * (i + 1)
+
+        # find vertical reflection lines
+        columns = [''.join([row[c] for row in rows]) for c in range(len(rows[0]))]
+        columnlength = len(columns[0])
+        for i in range(0, len(columns) - 1):
+            smudges = 0
+            for j in range(min(i + 1, len(columns) - i - 1)):
+                smudges += sum([1 for x in range(columnlength) if columns[i-j][x] != columns[i+j+1][x]])
+                if smudges > 1:
+                    break
+            if smudges == 1:
+                # print("reflection column found at index", i)
+                Sum2 += i + 1
+        
+        Pbar.IncrementProgress()
+
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return Sum, Sum2
 
 def day14(input:list[str], Pbar: ProgressBar):
     
