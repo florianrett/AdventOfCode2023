@@ -941,11 +941,137 @@ def day16(input:list[str], Pbar: ProgressBar):
 def day17(input:list[str], Pbar: ProgressBar):
     
     Pbar.StartPuzzle1(0)
-    
+
+    width = len(input[0])
+    height = len(input)
+    startHeat = -int(input[0][0])
+    Candidates:dict[int,tuple] = {}
+    Candidates[startHeat] = [(0, 0, 1, 0)]
+    Visited:set[tuple] = set()
+
+    currentHeatLoss = startHeat
+    while True:
+        while currentHeatLoss not in Candidates:
+            currentHeatLoss += 1
+        CurrentCandidates = Candidates.pop(currentHeatLoss)
+        for c in CurrentCandidates:
+            x = c[0]
+            y = c[1]
+            dir = c[2]
+            streak = c[3]
+            NewHeatloss = currentHeatLoss + int(input[y][x])
+
+            key:tuple = (x, y, dir, streak)
+            if key in Visited:
+                continue
+            Visited.add(key)
+
+            if x == width - 1 and y == height - 1:
+                leastPossibleHeatloss = NewHeatloss
+                break
+            
+            # print(x, y, heatloss)
+
+            for i in [0, -1, 1] if streak < 3 else [-1, 1]:
+                NewDir = (dir + i + 4) % 4
+                if NewDir == 0:
+                    NewX = x
+                    NewY = y - 1
+                elif NewDir == 1:
+                    NewX = x + 1
+                    NewY = y
+                elif NewDir == 2:
+                    NewX = x
+                    NewY = y + 1
+                elif NewDir == 3:
+                    NewX = x - 1
+                    NewY = y
+                NewStreak = streak + 1 if i == 0 else 1
+                
+
+                if NewX < 0 or NewX >= width or NewY < 0 or NewY >= height:
+                    continue
+                if (NewX, NewY, NewDir, NewStreak) in Visited:
+                    continue
+
+                NewCandidate = (NewX, NewY, NewDir, NewStreak)
+                if NewHeatloss in Candidates:
+                    Candidates[NewHeatloss].append(NewCandidate)
+                else:
+                    Candidates[NewHeatloss] = [NewCandidate]
+        else:
+            continue
+        break
+
     Pbar.StartPuzzle2(0)
+
+    Candidates:dict[int,tuple] = {}
+    Candidates[startHeat] = [(0, 0, 1, 0)]
+    Visited:set[tuple] = set()
+
+    currentHeatLoss = startHeat
+    while True:
+        while currentHeatLoss not in Candidates:
+            currentHeatLoss += 1
+        CurrentCandidates = Candidates.pop(currentHeatLoss)
+        for c in CurrentCandidates:
+            x = c[0]
+            y = c[1]
+            dir = c[2]
+            streak = c[3]
+            NewHeatloss = currentHeatLoss + int(input[y][x])
+
+            key:tuple = (x, y, dir, streak)
+            if key in Visited:
+                continue
+            Visited.add(key)
+
+            if x == width - 1 and y == height - 1 and streak >= 4:
+                solution2 = NewHeatloss
+                break
+            
+            # print(x, y, heatloss)
+
+            DirectionChanges = [-1, 0 , 1]
+            if streak < 4:
+                DirectionChanges = [0]
+            elif streak == 10:
+                DirectionChanges = [-1, 1]
+            for i in DirectionChanges:
+                NewDir = (dir + i + 4) % 4
+                if NewDir == 0:
+                    NewX = x
+                    NewY = y - 1
+                elif NewDir == 1:
+                    NewX = x + 1
+                    NewY = y
+                elif NewDir == 2:
+                    NewX = x
+                    NewY = y + 1
+                elif NewDir == 3:
+                    NewX = x - 1
+                    NewY = y
+                NewStreak = streak + 1 if i == 0 else 1
+                
+
+                if NewX < 0 or NewX >= width or NewY < 0 or NewY >= height:
+                    continue
+                if (NewX, NewY, NewDir, NewStreak) in Visited:
+                    continue
+
+                NewCandidate = (NewX, NewY, NewDir, NewStreak)
+                if NewHeatloss in Candidates:
+                    Candidates[NewHeatloss].append(NewCandidate)
+                else:
+                    Candidates[NewHeatloss] = [NewCandidate]
+        else:
+            continue
+        break
+
+
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return leastPossibleHeatloss, solution2
 
 def day18(input:list[str], Pbar: ProgressBar):
     
