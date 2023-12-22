@@ -917,18 +917,31 @@ def day15(input:list[str], Pbar: ProgressBar):
     return verificationNumber, power
 
 def day16(input:list[str], Pbar: ProgressBar):
+    from HelperFunctions import CalcEnergizedTiles
     
-    Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
-    Pbar.StartPuzzle2(0)
+    Pbar.StartPuzzle1(0)
+    tiles = CalcEnergizedTiles(input, (0, 0, 1))
+
+    width = len(input[0])
+    height = len(input)
+    Pbar.StartPuzzle2(width + height)
+
+    maxTiles = 0
+    for x in range(width):
+        maxTiles = max(maxTiles, CalcEnergizedTiles(input, (x, 0, 2)), CalcEnergizedTiles(input, (x, height - 1, 0)))
+        Pbar.IncrementProgress()
+    for y in range(height):
+        maxTiles = max(maxTiles, CalcEnergizedTiles(input, (0, y, 1)), CalcEnergizedTiles(input, (width - 1, y, 3)))
+        Pbar.IncrementProgress()
+
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return tiles, maxTiles
 
 def day17(input:list[str], Pbar: ProgressBar):
     
-    Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
+    Pbar.StartPuzzle1(0)
+    
     Pbar.StartPuzzle2(0)
     Pbar.FinishPuzzle2()
 

@@ -100,3 +100,71 @@ def Hash(input:str) -> int:
         result *= 17
         result %= 256
     return result
+
+# Day 16
+def CalcEnergizedTiles(input:list[str], entry:tuple) -> int:
+    
+    width:int = len(input[0])
+    height = len(input)
+
+    calculatedBeams:set[tuple] = set()
+    beams:set[tuple] = set() # third index is direction, 0 up, 1 right, ..
+    beams.add(entry)
+
+    while len(beams) > 0:
+        beam = beams.pop()
+        x = beam[0]
+        y = beam[1]
+        dir = beam[2]
+        if x < 0 or x >= width or y < 0 or y >= height:
+            continue
+        if beam in calculatedBeams:
+            continue
+        # print(beam)
+        calculatedBeams.add(beam)
+
+        tile = input[y][x]
+        if tile == "/":
+            if dir == 0:
+                dir = 1
+            elif dir == 1:
+                dir = 0
+            elif dir == 2:
+                dir = 3
+            elif dir == 3:
+                dir = 2
+        elif tile == "\\":
+            if dir == 0:
+                dir = 3
+            elif dir == 1:
+                dir = 2
+            elif dir == 2:
+                dir = 1
+            elif dir == 3:
+                dir = 0
+        elif tile == "|":
+            if dir == 1 or dir == 3:
+                beams.add((x, y-1, 0))
+                beams.add((x, y+1, 2))   
+                continue 
+        elif tile == "-":
+            if dir == 0 or dir == 2:
+                beams.add((x+1, y, 1))
+                beams.add((x-1, y, 3))
+                continue
+
+        # empty tiles or pointy-end splitters
+        if dir == 0:
+            beams.add((x, y-1, dir))
+        elif dir == 1:
+            beams.add((x+1, y, dir))
+        elif dir == 2:
+            beams.add((x, y+1, dir))
+        elif dir == 3:
+            beams.add((x-1, y, dir))
+
+    energizedTiles:set[tuple] = set()
+    for b in calculatedBeams:
+        energizedTiles.add((b[0], b[1]))
+
+    return len(energizedTiles)
