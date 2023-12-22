@@ -1074,13 +1074,54 @@ def day17(input:list[str], Pbar: ProgressBar):
     return leastPossibleHeatloss, solution2
 
 def day18(input:list[str], Pbar: ProgressBar):
+    from HelperFunctions import IsInside
+    from itertools import product
     
     Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
+    trenches:dict[tuple,str] = {}
+    x = 0
+    y = 0
+    for line in input:
+        s = line.split(" ")
+        dir = s[0]
+        num = int(s[1])
+        color = s[2].strip("()#")
+        # print(dir, num, color)
+
+        for i in range(num):
+            trenches[(x, y)] = color
+            if dir == "U":
+                y += 1
+            elif dir == "D":
+                y -= 1
+            elif dir == "R":
+                x += 1
+            elif dir == "L":
+                x -= 1
+
+    # find inside starting point
+    for x, y in product([-1, 1], repeat=2):
+        if IsInside(x, y, trenches.keys()):
+            break
+    interior:set[tuple] = set()
+    Candidates:set[tuple] = set()
+    Candidates.add((x, y))
+    while len(Candidates) > 0:
+        c = Candidates.pop()
+        interior.add(c)
+        for side in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
+            new = (c[0] + side[0], c[1] + side[1])
+            if new in trenches:
+                continue
+            if new in interior:
+                continue
+            Candidates.add(new)
+    solution1 = len(trenches) + len(interior)
+
     Pbar.StartPuzzle2(0)
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return solution1, -1
 
 def day19(input:list[str], Pbar: ProgressBar):
     

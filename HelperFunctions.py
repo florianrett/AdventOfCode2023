@@ -168,3 +168,17 @@ def CalcEnergizedTiles(input:list[str], entry:tuple) -> int:
         energizedTiles.add((b[0], b[1]))
 
     return len(energizedTiles)
+
+# Day 18
+def IsInside(x:int, y:int, bounds:set[tuple]) -> bool:
+    maxX = max([x[0] for x in bounds])
+    numCrosses = 0
+    while x <= maxX:
+        if (x, y) in bounds:
+            numCrosses += 1
+            while (x, y) in bounds:
+                x += 1
+        else:
+            x += 1
+
+    return numCrosses % 2 != 0
