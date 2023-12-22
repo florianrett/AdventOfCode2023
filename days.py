@@ -861,7 +861,7 @@ def day14(input:list[str], Pbar: ProgressBar):
             stones.remove((x, y))
             stones.add((newCol, y))
 
-        Pbar.IncrementProgress()
+        # Pbar.IncrementProgress()
         
         stoneConfig = frozenset(stones)
         if stoneConfig in knownStoneConfigs:
@@ -871,19 +871,50 @@ def day14(input:list[str], Pbar: ProgressBar):
         knownStoneConfigs[stoneConfig] = i
 
     load2 = sum([numrows - y for (x, y) in stones])
-
     Pbar.FinishPuzzle2()
 
     return load, load2
 
 def day15(input:list[str], Pbar: ProgressBar):
+    from HelperFunctions import Hash
     
-    Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
-    Pbar.StartPuzzle2(0)
+    sequence:list[str] = input[0].split(',')
+    Pbar.StartPuzzle1(len(sequence))
+    verificationNumber = 0
+    for s in sequence:
+        verificationNumber += Hash(s)
+
+    Pbar.StartPuzzle2(len(sequence))
+
+    boxes:list[dict[str,tuple]] = [{} for i in range(256)]
+
+    for s in sequence:
+        label = re.match("[a-z]+", s).group()
+        box:dict[str,tuple] = boxes[Hash(label)]
+        operation = s[len(label)]
+        if operation == '-':
+            if label in box:
+                removedLens = box.pop(label)
+                for k,v in box.items():
+                    if v[0] > removedLens[0]:
+                        box[k] = (v[0] - 1, v[1])
+        else:
+            focal = int(s[len(label)+1:])
+            if label in box:
+                box[label] = (box[label][0], focal)
+            else:
+                box[label] = (len(box), focal)
+            pass
+    
+    power = 0
+    for i in range(256):
+        box = boxes[i]
+        for k,v in box.items():
+            power += (i + 1) * (v[0] + 1) * v[1]
+
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return verificationNumber, power
 
 def day16(input:list[str], Pbar: ProgressBar):
     

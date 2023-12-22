@@ -91,3 +91,12 @@ def brute_force(records: str, nums: list[int]) -> int:
     # for p in itertools.product(*gen):
     #     print(p)
     return sum(match(candidate, nums) for candidate in itertools.product(*gen))
+
+# Day 15
+def Hash(input:str) -> int:
+    result = 0
+    for v in [ord(c) for c in input]:
+        result += v
+        result *= 17
+        result %= 256
+    return result
