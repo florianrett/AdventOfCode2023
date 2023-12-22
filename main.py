@@ -3,7 +3,7 @@ import days
 from ProgressBar import ProgressBar
 
 day = 18
-bUseTestInput = True
+bUseTestInput = False
 
 if bUseTestInput:
     print("Loading test input from file")

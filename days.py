@@ -1077,10 +1077,11 @@ def day18(input:list[str], Pbar: ProgressBar):
     from HelperFunctions import IsInside
     from itertools import product
     
-    Pbar.StartPuzzle1(len(input))
-    trenches:dict[tuple,str] = {}
+    Pbar.StartPuzzle1(0)
+    vertices:list[tuple] = []
     x = 0
     y = 0
+    trenchlength = 0
     for line in input:
         s = line.split(" ")
         dir = s[0]
@@ -1088,40 +1089,66 @@ def day18(input:list[str], Pbar: ProgressBar):
         color = s[2].strip("()#")
         # print(dir, num, color)
 
-        for i in range(num):
-            trenches[(x, y)] = color
-            if dir == "U":
-                y += 1
-            elif dir == "D":
-                y -= 1
-            elif dir == "R":
-                x += 1
-            elif dir == "L":
-                x -= 1
+        vertices.append((x, y))
+        if dir == "U":
+            y += num
+        elif dir == "D":
+            y -= num
+        elif dir == "R":
+            x += num
+        elif dir == "L":
+            x -= num
+        trenchlength += num
 
-    # find inside starting point
-    for x, y in product([-1, 1], repeat=2):
-        if IsInside(x, y, trenches.keys()):
-            break
-    interior:set[tuple] = set()
-    Candidates:set[tuple] = set()
-    Candidates.add((x, y))
-    while len(Candidates) > 0:
-        c = Candidates.pop()
-        interior.add(c)
-        for side in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
-            new = (c[0] + side[0], c[1] + side[1])
-            if new in trenches:
-                continue
-            if new in interior:
-                continue
-            Candidates.add(new)
-    solution1 = len(trenches) + len(interior)
+    TotalArea = 0
+    for i in range(len(vertices)):
+        v0 = (0, 0)
+        v1 = vertices[i]
+        v2 = vertices[i-1]
+        area = 0.5 * (v1[0] * v2[1] - v1[1] * v2[0])
+        TotalArea += area
+        
+    # in the 2D geometri projection every vertex lies in the center of a 1m cube
+    # for straight edges exactly half a meter lies outisde of this boundary
+    # for outer corners this increases to 0.75, for inner corners it is reduced to 0.25
+    # a polygon always has 4 outer corners more than it has inner corners, the remaining corners average out to 0.5
+    solution1 = int(TotalArea + trenchlength / 2 + 1)
 
     Pbar.StartPuzzle2(0)
+    vertices:list[tuple] = []
+    x = 0
+    y = 0
+    trenchlength = 0
+    for line in input:
+        ins = line.split(" ")[2].strip("()#")
+        dir = ins[-1]
+        num = int(ins[:-1], 16)
+
+        vertices.append((x, y))
+        if dir == "0":
+            x += num
+        elif dir == "1":
+            y -= num
+        elif dir == "2":
+            x -= num
+        elif dir == "3":
+            y += num
+        trenchlength += num
+
+    TotalArea = 0
+    for i in range(len(vertices)):
+        v0 = (0, 0)
+        v1 = vertices[i]
+        v2 = vertices[i-1]
+        area = 0.5 * (v1[0] * v2[1] - v1[1] * v2[0])
+        TotalArea += area
+
+    # same calculation as for part 1
+    solution2 = int(TotalArea + trenchlength / 2 + 1)
+    
     Pbar.FinishPuzzle2()
 
-    return solution1, -1
+    return solution1, solution2
 
 def day19(input:list[str], Pbar: ProgressBar):
     
