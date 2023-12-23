@@ -2,7 +2,7 @@ import requests
 import days
 from ProgressBar import ProgressBar
 
-day = 18
+day = 19
 bUseTestInput = False
 
 if bUseTestInput:

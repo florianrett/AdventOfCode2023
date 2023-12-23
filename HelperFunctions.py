@@ -1,8 +1,8 @@
 import collections
-import copy
 import itertools
 # from HelperClasses import Number
 from ProgressBar import ProgressBar
+from copy import copy
 
 # Day 5
 def ConvertNumber(Number:int, Map:dict[tuple[int]]) -> int:
@@ -52,7 +52,7 @@ def CalculatePossibleArrangementsRec(record:str, groups:list[int], groupSize:int
             else:
                 return 0
     
-    newGroups = copy.copy(groups)
+    newGroups = copy(groups)
     if record[0] == '?':
         result = CalculatePossibleArrangementsRec("#" + record[1:], newGroups, groupSize, memoCache) + CalculatePossibleArrangementsRec("." + record[1:], newGroups, groupSize, memoCache)
     
@@ -182,3 +182,81 @@ def IsInside(x:int, y:int, bounds:set[tuple]) -> bool:
             x += 1
 
     return numCrosses % 2 != 0
+
+# Day 19 
+def CalculateAcceptanceRangesRec(xRange:range, mRange:range, aRange:range, sRange:range, currentWorkflow:str, workflows:dict[str,list[tuple]], results:list[tuple], flow:list[str] = []) -> None:
+
+    if currentWorkflow == "R":
+        return
+    
+    if currentWorkflow == "A":
+        results.append((xRange, mRange, aRange, sRange, flow))
+        return
+
+    if len(xRange) == 0 or len(mRange) == 0 or len(aRange) == 0 or len(sRange) == 0:
+        return
+    
+    NewFlow = copy(flow)
+    NewFlow.append(currentWorkflow)
+        
+    RemainingRangeX = copy(xRange)
+    RemainingRangeM = copy(mRange)
+    RemainingRangeA = copy(aRange)
+    RemainingRangeS = copy(sRange)
+
+    workflow = workflows[currentWorkflow]
+    for rule in workflow:
+        compValue:int = rule[2]
+        nextWorkflow:str = rule[3]
+        if rule[1]: # greater
+            if rule[0] == 0:
+                NewRange = range(max(RemainingRangeX.start, compValue + 1), RemainingRangeX.stop) # need to ensure range start is not set to 0 when comparing to the specialized "x>0" condition I used to encode the final fallback rule
+                RemainingRangeX = range(RemainingRangeX.start, compValue + 1)
+                CalculateAcceptanceRangesRec(NewRange, RemainingRangeM, RemainingRangeA, RemainingRangeS, nextWorkflow, workflows, results, NewFlow)
+            elif rule[0] == 1:
+                NewRange = range(compValue + 1, RemainingRangeM.stop)
+                RemainingRangeM = range(RemainingRangeM.start, compValue + 1)
+                CalculateAcceptanceRangesRec(RemainingRangeX, NewRange, RemainingRangeA, RemainingRangeS, nextWorkflow, workflows, results, NewFlow)
+            elif rule[0] == 2:
+                NewRange = range(compValue + 1, RemainingRangeA.stop)
+                RemainingRangeA = range(RemainingRangeA.start, compValue + 1)
+                CalculateAcceptanceRangesRec(RemainingRangeX, RemainingRangeM, NewRange, RemainingRangeS, nextWorkflow, workflows, results, NewFlow)
+            else:
+                NewRange = range(compValue + 1, RemainingRangeS.stop)
+                RemainingRangeS = range(RemainingRangeS.start, compValue + 1)
+                CalculateAcceptanceRangesRec(RemainingRangeX, RemainingRangeM, RemainingRangeA, NewRange, nextWorkflow, workflows, results, NewFlow)
+        else: # smaller
+            if rule[0] == 0:
+                NewRange = range(RemainingRangeX.start, compValue)
+                RemainingRangeX = range(compValue, RemainingRangeX.stop)
+                CalculateAcceptanceRangesRec(NewRange, RemainingRangeM, RemainingRangeA, RemainingRangeS, nextWorkflow, workflows, results, NewFlow)
+            elif rule[0] == 1:
+                NewRange = range(RemainingRangeM.start, compValue)
+                RemainingRangeM = range(compValue, RemainingRangeM.stop)
+                CalculateAcceptanceRangesRec(RemainingRangeX, NewRange, RemainingRangeA, RemainingRangeS, nextWorkflow, workflows, results, NewFlow)
+            elif rule[0] == 2:
+                NewRange = range(RemainingRangeA.start, compValue)
+                RemainingRangeA = range(compValue, RemainingRangeA.stop)
+                CalculateAcceptanceRangesRec(RemainingRangeX, RemainingRangeM, NewRange, RemainingRangeS, nextWorkflow, workflows, results, NewFlow)
+            else:
+                NewRange = range(RemainingRangeS.start, compValue)
+                RemainingRangeS = range(compValue, RemainingRangeS.stop)
+                CalculateAcceptanceRangesRec(RemainingRangeX, RemainingRangeM, RemainingRangeA, NewRange, nextWorkflow, workflows, results, NewFlow)
+
+    # for p in parts:
+    #     # print("part", p)
+    #     workflowName = "in"
+    #     while workflowName not in ["A", "R"]:
+    #         # print("workflow", workflowName)
+    #         workflow = workflows[workflowName]
+    #         for rule in workflow:
+    #             # print("rule", rule)
+    #             if rule[1] and p[rule[0]] > rule[2]:
+    #                 workflowName = rule[3]
+    #                 break
+    #             elif not rule[1] and p[rule[0]] < rule[2]:
+    #                 workflowName = rule[3]
+    #                 break
+    #     if workflowName == "A":
+    #         AcceptanceRating += sum(p)
+    pass

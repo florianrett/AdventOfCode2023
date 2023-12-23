@@ -1151,13 +1151,78 @@ def day18(input:list[str], Pbar: ProgressBar):
     return solution1, solution2
 
 def day19(input:list[str], Pbar: ProgressBar):
+    from HelperFunctions import CalculateAcceptanceRangesRec
+
+    workflows:dict[str,list[tuple]] = {}
+    parts:list[tuple] = []
     
-    Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
+    for line in input:
+        if len(line) == 0:
+            continue
+        if line[0] == "{":
+            parts.append([int(x) for x in re.findall('\d+', line)])
+        else:
+            rules = re.search('{(.*)}', line)
+            name = line[:rules.start()]
+            rulelist:list[tuple] = []
+            for rule in rules.group(1).split(","):
+                # print(rule)
+                if not ":" in rule:
+                    rulelist.append((0, True, 0, rule))
+                else:
+                    dataIndex = 0 if rule[0] == "x" else 1 if rule[0] == "m" else 2 if rule[0] == "a" else 3
+                    compareGreater = rule[1] == ">"
+                    value = int(re.search('\d+', rule).group())
+                    target = rule.split(":")[1]
+                    rulelist.append((dataIndex, compareGreater, value, target))
+                    # print(dataIndex, compareGreater, value, target)
+            workflows[name] = copy.copy(rulelist)
+ 
+    AcceptanceRating = 0
+    Pbar.StartPuzzle1(len(parts))
+    for p in parts:
+        # print("part", p)
+        workflowName = "in"
+        while workflowName not in ["A", "R"]:
+            # print("workflow", workflowName)
+            workflow = workflows[workflowName]
+            for rule in workflow:
+                # print("rule", rule)
+                if rule[1] and p[rule[0]] > rule[2]:
+                    workflowName = rule[3]
+                    break
+                elif not rule[1] and p[rule[0]] < rule[2]:
+                    workflowName = rule[3]
+                    break
+        if workflowName == "A":
+            AcceptanceRating += sum(p)
+
+        Pbar.IncrementProgress()
+
     Pbar.StartPuzzle2(0)
+
+    AcceptedRanges:list[tuple] = []
+    CalculateAcceptanceRangesRec(range(1, 4001), range(1, 4001), range(1, 4001), range(1, 4001), "in", workflows, AcceptedRanges)
+    # print(AcceptedRanges)
+
+    RangeSets:list[list] = []
+    for a in AcceptedRanges:
+        RangeSets.append([])
+        for r in a:
+            RangeSets[-1].append(set([x for x in r]))
+
+    TotalCombinations = 0
+    for r in AcceptedRanges:
+        combinations = 1
+        for i in range(4):
+            combinations *= len(r[i])
+        # print(r, combinations)
+
+        TotalCombinations += combinations
+
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return AcceptanceRating, TotalCombinations
 
 def day20(input:list[str], Pbar: ProgressBar):
     
