@@ -1225,13 +1225,74 @@ def day19(input:list[str], Pbar: ProgressBar):
     return AcceptanceRating, TotalCombinations
 
 def day20(input:list[str], Pbar: ProgressBar):
-    
-    Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
+    from HelperClasses import Module
+
+    Pbar.StartPuzzle1(0)
+
+    Modules:dict[str,Module] = {}
+
+    for line in input:
+        mod = Module(line)
+        Modules[mod.name] = mod
+
+    Modules["output"] = Module("output")
+    Modules["rx"] = Module("rx")
+
+    for m in Modules.values():
+        for d in m.destinations:
+            if d in Modules:
+                Modules[d].InitConnection(m.name)
+
+    NumLowPulses = 0
+    NumHighPulses = 0
+    for i in range(1000):
+        pulses = [("button", "broadcaster", False)]
+        while len(pulses) > 0:
+            pulse = pulses.pop(0)
+            # print("pulse", pulse[0], "high" if pulse[2] else "low", "->", pulse[1])
+            if pulse[2]:
+                NumHighPulses += 1
+            else:
+                NumLowPulses += 1
+            
+            pulses += Modules[pulse[1]].Pulse(pulse[2], pulse[0])
+    result1 = NumLowPulses * NumHighPulses
+
     Pbar.StartPuzzle2(0)
+
+    for m in Modules.values():
+        m.Reset()
+    NumPresses = 0
+    CycleLengths = {}
+    RxSource = Modules["rx"].source
+    while True:
+        NumPresses += 1
+        pulses = [("button", "broadcaster", False)]
+        while len(pulses) > 0:
+            pulse = pulses.pop(0)         
+            if pulse[2]:
+                NumHighPulses += 1
+            else:
+                NumLowPulses += 1
+            
+            pulses += Modules[pulse[1]].Pulse(pulse[2], pulse[0])
+
+            # rx will be pulsed when &lv sends a low pulse, meaning all of [st, tn, hh, dt] need to be high
+            if pulse[1] == RxSource and pulse[2]:
+                if pulse[0] not in CycleLengths:
+                    CycleLengths[pulse[0]] = NumPresses
+
+                    if len(CycleLengths) == len(Modules[RxSource].memory):
+                        break
+        else:
+            continue
+        break
+    
+    result2 = np.lcm.reduce([x for x in CycleLengths.values()], dtype=np.int64)
+
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return result1, result2
 
 def day21(input:list[str], Pbar: ProgressBar):
     

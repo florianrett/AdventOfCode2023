@@ -108,3 +108,67 @@ class NodeSolver:
     
     def IsSolved2(self) -> bool:
         return self.CurrentNode[-1] == 'Z'
+    
+class Module:
+
+    def __init__(self, input:str) -> None:
+        split = input.split(" -> ")
+        if input == "output" or input == "rx":
+            self.type = -1
+            self.name = input
+            self.destinations = []
+            return
+
+        self.destinations = re.findall('[a-z]+', split[1])
+
+        if split[0] == "broadcaster":
+            self.type = 0
+            self.name = split[0]
+        elif split[0][0] == "%":
+            self.type = 1
+            self.name = split[0][1:]
+            self.state = False
+        elif split[0][0] == "&":
+            self.type  = 2
+            self.name = split[0][1:]
+            self.memory = {}
+        pass
+
+    def InitConnection(self, InputModule:str) -> None:
+        if self.type == 2:
+            self.memory[InputModule] = False
+        if self.type == -1:
+            self.source = InputModule # this is only used to generalize puzzle 2
+
+    def Pulse(self, bHigh:bool, source:str) -> list[tuple]:
+        out = [] # format: tuple(source module name, destination module name, pulse value (high=True, low=False))
+        
+        if self.type == 0:
+            out = [(self.name, x, bHigh) for x in self.destinations]
+        elif self.type == 1:
+            if not bHigh:
+                self.state = not self.state
+                out = [(self.name, x, self.state) for x in self.destinations]
+        elif self.type == 2:
+            self.memory[source] = bHigh
+            out = [(self.name, x, not all(self.memory.values())) for x in self.destinations]
+            # print(self.memory, out)
+        
+        return out
+    
+    def IsInDefaultState(self) -> bool:
+        if self.type == -1:
+            return True
+        elif self.type == 0:
+            return True
+        elif self.type == 1:
+            return self.state == False
+        elif self.type == 2:
+            return not any(self.memory.values())
+        
+    def Reset(self) -> None:
+        if self.type == 1:
+            self.state = False
+        elif self.type == 2:
+            for k in self.memory:
+                self.memory[k] = False
