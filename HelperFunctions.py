@@ -260,3 +260,49 @@ def CalculateAcceptanceRangesRec(xRange:range, mRange:range, aRange:range, sRang
     #     if workflowName == "A":
     #         AcceptanceRating += sum(p)
     pass
+
+# Day 21
+def SolveThirdDegreePolynomialCoefficients(results:list[int]) -> list[int]:
+    
+    # f(x) = ax^2 + bx + c
+
+    # u = a + b + c
+    # v = 4a + 2b + c
+    # w = 9a + 3b + c
+
+    # a = u - b - c
+
+    # v = 4*(u-b-c) + 2b + c
+    # v = 4u-4b-4c + 2b + c
+    # v = 4u - 2b - 3c
+    # 2b = 4u - 3c - v
+    # b = 2u - 1.5c - 0.5v
+
+    # w = 9a + 3b + c
+    # w = 9*(u - b - c) + 3b + c
+    # w = 9*(u - (2u - 1.5c - 0.5v) - c) + 3*(2u - 1.5c - 0.5v) + c
+    # w = 9*(u - 2u + 1.5c + 0.5v - c) + 6u - 4.5c - 1.5v + c
+    # w = 9u - 18u + 13.5c + 4.5v - 9c + 6u - 4.5c - 1.5v + c
+    # w = 9u - 18u + 6u + 13.5c - 9c - 4.5c + c + 4.5v - 1.5v
+    # w = - 3u + c + 3v
+    # c = w + 3u - 3v
+
+    # b = 2u - 1.5*(w + 3u - 3v) - 0.5v
+    # b = 2u - 1.5w - 4.5u + 4.5v - 0.5v
+    # b = -2.5u - 1.5w + 4v
+
+    # a = u - b - c
+    # a = u - (-2.5u - 1.5w + 4v) - (w + 3u - 3v)
+    # a = u + 2.5u + 1.5w - 4v - w - 3u + 3v
+    # a = 0.5u + 0.5w - 1v
+
+    u = results[0]
+    v = results[1]
+    w = results[2]
+
+    coefficients = []
+    coefficients.append(0.5 * u + 0.5 * w - v)
+    coefficients.append(-2.5 * u - 1.5 * w + 4 * v)
+    coefficients.append(w + 3 * u - 3 * v)
+
+    return coefficients

@@ -10,5 +10,6 @@ The session cookie (without 'session=') has to be copied into a file called 'ses
 
 # Personal Goals
 This year I set myself some specific goals to achieve while solving the puzzles:
+- Program generic solutions that should work for every puzzle input
 - Get more familiar with regular expressions, especially for parsing inputs
 - Learn to use python's collections library 

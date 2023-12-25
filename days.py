@@ -1295,13 +1295,99 @@ def day20(input:list[str], Pbar: ProgressBar):
     return result1, result2
 
 def day21(input:list[str], Pbar: ProgressBar):
+    from itertools import product
+    from copy import copy
+    from HelperFunctions import SolveThirdDegreePolynomialCoefficients
     
-    Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
-    Pbar.StartPuzzle2(0)
+    Pbar.StartPuzzle1(64)
+    width = len(input[0])
+    height = len(input)
+
+    Plots:set[tuple] = set()
+    for x, y in product(range(width), range(height)):
+        if input[y][x] == "S":
+            StartPosition = (x, y)
+    Plots.add(StartPosition)
+    
+    for i in range(64):
+        NewPlots:set[tuple] = set()
+        for p in Plots:
+            x, y = p
+            for x1, y1 in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
+                NewX = x + x1
+                NewY = y + y1
+                if NewX < 0 or NewY < 0 or NewX >= width or NewY >= height:
+                    continue
+                if input[NewY][NewX] == "#":
+                    continue
+                NewPlots.add((NewX, NewY))
+            pass
+        Plots = NewPlots
+
+        Pbar.IncrementProgress()
+    result1 = len(Plots)
+
+    NumSteps = 131 * 2 + 66
+    # NumSteps = 1000
+    Pbar.StartPuzzle2(NumSteps)
+
+    Neighbors:dict[tuple,list] = {}
+    for x, y in product(range(width), range(height)):
+        n = []
+        for x1, y1 in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
+            newx = x  + x1
+            newy = y + y1
+            if input[newy % height][newx % width] != '#':
+                n.append((x1, y1))
+        Neighbors[(x, y)] = n
+
+    Plots.clear()
+    Plots.add(StartPosition)
+    KnownOddPlots :set[tuple] = set()
+    KnownEvenPlots:set[tuple] = set()
+    Sequence:list[int] = []
+    for i in range(NumSteps):
+        NewPlots:set[tuple] = set()
+        bIsEven = i % 2 == 0 # whether the currently reachable plots are after an even number of steps
+
+        if (i - 65) % 131 == 0:
+            num = len(Plots) + len(KnownEvenPlots if i % 2 == 0 else KnownOddPlots)
+            Sequence.append(num)
+            # print(i, (i - 65) // 131, num)
+
+        for p in Plots:
+            x, y = p
+            # if (x%width, y%height) == StartPosition:
+            #     print("reached mirrored start at", x, y, "at step", i)
+            (KnownEvenPlots if bIsEven else KnownOddPlots).add((x, y))
+            for x1, y1 in Neighbors[(x%width, y%height)]:
+                NewX = x + x1
+                NewY = y + y1
+                if input[NewY % height][NewX % width] == "#":
+                    continue
+                if (NewX, NewY) in (KnownOddPlots if bIsEven else KnownEvenPlots):
+                    continue
+
+                NewPlots.add((NewX, NewY))
+        Plots = NewPlots
+
+        Pbar.IncrementProgress()
+
+    # the plot field has a perfectly empty cross in its middle, thereby reaching a new mirrored sparting spot every 131 steps
+    # since the total number of steps is 202300 * 131 + 65 this should be mappable to a function
+    # f(x) -> reachable fields after x*131 + 65 steps
+    # therefore puzzle solution would be f(202300)
+    # Number of map squares explored: g(1) = 1; g(2) = 5; g(3) = 13; g(4) = 25
+    # --> f(x) should be polynomial of 3rd degree i.e. f(x) = ax^2 + bx + c and can be solved with first 3 entries of sequence (u,v,w)
+    coeffs = SolveThirdDegreePolynomialCoefficients(Sequence)
+    a = int(coeffs[0])
+    b = int(coeffs[1])
+    c = int(coeffs[2])
+    x = 202301 # needs +1 since measurements are taken for 131*0 + 65, 131*1 + 65 etc. but mapped to f(1), f(2), f(3)
+    result2 = int(a * x * x + b * x + c)
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return result1, result2
 
 def day22(input:list[str], Pbar: ProgressBar):
     
