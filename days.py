@@ -1390,13 +1390,78 @@ def day21(input:list[str], Pbar: ProgressBar):
     return result1, result2
 
 def day22(input:list[str], Pbar: ProgressBar):
+    from itertools import product
     
     Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
-    Pbar.StartPuzzle2(0)
+
+    NumBricks = len(input)
+
+    BlockCoords:list[list] = []
+    for line in input:
+        c:list[int] = [int(x) for x in re.findall('\d+', line)]
+        # print(coords)
+        BlockCoords.append(c)
+    BlockCoords.sort(key=lambda x:x[2])
+        
+    FallenBricks:dict[tuple,int] = {}
+    SupportingBricks:dict[int,set[int]] = {}
+    for BrickID in range(NumBricks):
+        x1 = BlockCoords[BrickID][0]
+        y1 = BlockCoords[BrickID][1]
+        z1 = BlockCoords[BrickID][2]
+        x2 = BlockCoords[BrickID][3]
+        y2 = BlockCoords[BrickID][4]
+        z2 = BlockCoords[BrickID][5]
+        for offset in range(0, min(z1, z2)):
+            Supports:set[int] = set()
+            for p in product(range(x1, x2+1), range(y1, y2+1), range(z1 - offset, z2+1 - offset)):
+                if p in FallenBricks:
+                    Supports.add(FallenBricks[p])
+            if len(Supports) > 0:
+                offset -= 1
+                SupportingBricks[BrickID] = Supports
+                break
+        for p in product(range(x1, x2+1), range(y1, y2+1), range(z1 - offset, z2+1 - offset)):
+            FallenBricks[p] = BrickID
+
+    SingleSupports:set = set()
+    for s in SupportingBricks.values():
+        if len(s) == 1:
+            SingleSupports = SingleSupports.union(s)
+    solution1 = NumBricks - len(SingleSupports)
+
+    Pbar.StartPuzzle2(NumBricks)
+    SupportedBricks:dict[int,list] = {}
+    for BrickID, Supports in SupportingBricks.items():
+        for s in Supports:
+            if s in SupportedBricks:
+                SupportedBricks[s].append(BrickID)
+            else:
+                SupportedBricks[s] = [BrickID]
+
+    solution2 = 0
+    for i in range(NumBricks):
+        FallingBricks = set()
+        FallingBricks.add(i)
+
+        if i not in SupportedBricks:
+            continue
+
+        Candidates:set = SupportedBricks[i]
+        while Candidates:
+            c = Candidates.pop()
+            if SupportingBricks[c].issubset(FallingBricks):
+                FallingBricks.add(c)
+                if c not in SupportedBricks:
+                    continue
+                Candidates += SupportedBricks[c]
+        
+        solution2 += len(FallingBricks) - 1
+
+        Pbar.IncrementProgress()
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return solution1, solution2
 
 def day23(input:list[str], Pbar: ProgressBar):
     
