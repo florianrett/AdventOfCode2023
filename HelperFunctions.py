@@ -349,3 +349,27 @@ def FindLongestHikeTrailRec(map:list[str], currentX:int, currentY:int, Visited:s
         return result
     else:
         return -1
+    
+def FindLongestPathRec(Graph:dict[tuple,tuple], Goal:tuple, Current:tuple, Visited:set[tuple]) -> int:
+    if Current == Goal:
+        return 0
+    if Current not in Graph:
+        return -1
+    
+    NewVisited = copy(Visited)
+    NewVisited.add(Current)
+
+    options = [0]
+    for n in Graph[Current]:
+        npos = (n[0], n[1])
+        steps = n[2]
+        if npos not in Visited:
+            r = FindLongestPathRec(Graph, Goal, npos, NewVisited)
+            if r >= 0:
+                options.append(r + steps)
+    
+    longest = max(options)
+    if longest > 0:
+        return longest
+    else:
+        return -1

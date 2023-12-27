@@ -1464,13 +1464,15 @@ def day22(input:list[str], Pbar: ProgressBar):
     return solution1, solution2
 
 def day23(input:list[str], Pbar: ProgressBar):
-    from HelperFunctions import FindLongestHikeTrailRec
+    from HelperFunctions import FindLongestHikeTrailRec, FindLongestPathRec
     from itertools import product
+    from sys import setrecursionlimit
     
     Pbar.StartPuzzle1(0)
+    setrecursionlimit(2500)
 
-    StartX = input[0].find(".")
-    GoalX = input[-1].find(".")
+    StartNode = (input[0].find("."), 0)
+    GoalNode = (input[-1].find("."), len(input) - 1)
 
     # GraphNodes:list[tuple] = []
     # GraphNodes.append((StartX, 0))
@@ -1513,17 +1515,41 @@ def day23(input:list[str], Pbar: ProgressBar):
             DirectionalGraph[(x, y)].append((nx, ny, 1))
 
         # TODO: helper class for nodes
+    MinimalNodes:set[tuple] = set([x for x in Graph if len(Graph[x]) > 2])
+    MinimalNodes.add(StartNode)
+    MinimalNodes.add(GoalNode)
+    # print(Graph)
+    # print(MinimalNodes)
+
+    # reduce graph
+    for node in MinimalNodes:
+        for i in range(len(DirectionalGraph[node])):
+            n = DirectionalGraph[node][i]
+            last = node
+            target = n[:2]
+            distance = n[2]
+            while target not in MinimalNodes:
+                # print(target, distance)
+                for nt in DirectionalGraph[target]:
+                    if nt[:2] != last:
+                        last = target
+                        target = nt[:2]
+                        distance += nt[2]
+                        break
+                else:
+                    break # no further node found, break the while loop
+                continue
+            DirectionalGraph[node][i] = (target[0], target[1], distance)
+    DirectionalGraph = {k:v for k,v in DirectionalGraph.items() if k in MinimalNodes}
     print(DirectionalGraph)
 
-    solution1 = FindLongestHikeTrailRec(input, StartX, 1, set([(StartX, 0)]), False)
-    solution1 += 1 #search started 1 field below starting spot
+    solution1 = 0
+    solution1 = FindLongestPathRec(DirectionalGraph, GoalNode, StartNode, set())
 
     Pbar.StartPuzzle2(0)
 
     print("Start Puzzle 2")
-    # solution2 = FindLongestHikeTrailRec(input, StartX, 1, set([(StartX, 0)]), True)
     solution2 = 0
-    solution2 += 1 #search started 1 field below starting spot
 
     # print(LongestTrails)
 
