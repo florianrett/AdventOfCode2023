@@ -2,8 +2,8 @@ import requests
 import days
 from ProgressBar import ProgressBar
 
-day = 22
-bUseTestInput = False
+day = 23
+bUseTestInput = True
 
 if bUseTestInput:
     print("Loading test input from file")

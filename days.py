@@ -1464,13 +1464,72 @@ def day22(input:list[str], Pbar: ProgressBar):
     return solution1, solution2
 
 def day23(input:list[str], Pbar: ProgressBar):
+    from HelperFunctions import FindLongestHikeTrailRec
+    from itertools import product
     
-    Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
+    Pbar.StartPuzzle1(0)
+
+    StartX = input[0].find(".")
+    GoalX = input[-1].find(".")
+
+    # GraphNodes:list[tuple] = []
+    # GraphNodes.append((StartX, 0))
+    # GraphNodes.append((GoalX, len(input) - 1))
+    DirectionalGraph:dict[tuple,tuple] = {} #  (x, y) -> (x, y, steps)
+    Graph:dict[tuple,tuple] = {}
+
+    for x, y in product(range(len(input[0])), range(len(input))):
+        tile = input[y][x]
+        if tile == '#':
+            continue
+        neighbors = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+        Graph[(x, y)] = []
+        for n in neighbors:
+            nx = x + n[0]
+            ny = y + n[1]
+            if ny < 0 or ny >= len(input):
+                continue
+            if input[ny][nx] == '#':
+                continue
+            Graph[(x, y)].append((nx, ny, 1))
+
+        if tile == '>':
+            neighbors = [(1, 0)]
+        elif tile == '<':
+            neighbors = [(-1, 0)]
+        elif tile == '^':
+            neighbors = [(0, -1)]
+        elif tile == 'v':
+            neighbors = [(0, 1)]
+
+        DirectionalGraph[(x, y)] = []
+        for n in neighbors:
+            nx = x + n[0]
+            ny = y + n[1]
+            if ny < 0 or ny >= len(input):
+                continue
+            if input[ny][nx] == '#':
+                continue
+            DirectionalGraph[(x, y)].append((nx, ny, 1))
+
+        # TODO: helper class for nodes
+    print(DirectionalGraph)
+
+    solution1 = FindLongestHikeTrailRec(input, StartX, 1, set([(StartX, 0)]), False)
+    solution1 += 1 #search started 1 field below starting spot
+
     Pbar.StartPuzzle2(0)
+
+    print("Start Puzzle 2")
+    # solution2 = FindLongestHikeTrailRec(input, StartX, 1, set([(StartX, 0)]), True)
+    solution2 = 0
+    solution2 += 1 #search started 1 field below starting spot
+
+    # print(LongestTrails)
+
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return solution1, solution2
 
 def day24(input:list[str], Pbar: ProgressBar):
     

@@ -306,3 +306,46 @@ def SolveThirdDegreePolynomialCoefficients(results:list[int]) -> list[int]:
     coefficients.append(w + 3 * u - 3 * v)
 
     return coefficients
+
+# Day 23
+def FindLongestHikeTrailRec(map:list[str], currentX:int, currentY:int, Visited:set[tuple], bIgnoreSlopes:bool, last = (0, 0)) -> int:
+    
+    mapTile = map[currentY][currentX]
+    if mapTile == "#":
+        return -1
+    
+    if currentY == len(map) - 1:
+        return 0
+
+    CurrentPos = (currentX, currentY)
+    if CurrentPos in Visited:
+        return -1
+                
+    NewVisited = copy(Visited)
+    NewVisited.add(CurrentPos)
+    
+    if mapTile == "." or bIgnoreSlopes:
+        PossibleSteps = [(0, -1), (1, 0), (0, 1), (-1, 0)]
+    elif mapTile == "^":
+        PossibleSteps = [(0, -1)]
+    elif mapTile == ">":
+        PossibleSteps = [(1, 0)]
+    elif mapTile == "v":
+        PossibleSteps = [(0, 1)]
+    elif mapTile == "<":
+        PossibleSteps = [(-1, 0)]
+
+    options = []
+    for step in PossibleSteps:
+        x = currentX + step[0]
+        y = currentY + step[1]
+        options.append(1 + FindLongestHikeTrailRec(map, x, y, NewVisited, bIgnoreSlopes, CurrentPos))
+    
+    # if len([x for x in options if x > 0]) > 1:
+    #     print(currentX, currentY, options)
+        
+    result = max(options)
+    if result > 0:
+        return result
+    else:
+        return -1
