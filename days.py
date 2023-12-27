@@ -1464,21 +1464,16 @@ def day22(input:list[str], Pbar: ProgressBar):
     return solution1, solution2
 
 def day23(input:list[str], Pbar: ProgressBar):
-    from HelperFunctions import FindLongestHikeTrailRec, FindLongestPathRec
+    from HelperFunctions import FindLongestPathRec, ReduceGraph
     from itertools import product
-    from sys import setrecursionlimit
     
     Pbar.StartPuzzle1(0)
-    setrecursionlimit(2500)
 
     StartNode = (input[0].find("."), 0)
     GoalNode = (input[-1].find("."), len(input) - 1)
 
-    # GraphNodes:list[tuple] = []
-    # GraphNodes.append((StartX, 0))
-    # GraphNodes.append((GoalX, len(input) - 1))
-    DirectionalGraph:dict[tuple,tuple] = {} #  (x, y) -> (x, y, steps)
-    Graph:dict[tuple,tuple] = {}
+    DirectionalGraph:dict[tuple,list[tuple]] = {} #  (x, y) -> (x, y, steps)
+    Graph:dict[tuple,list[tuple]] = {}
 
     for x, y in product(range(len(input[0])), range(len(input))):
         tile = input[y][x]
@@ -1514,44 +1509,27 @@ def day23(input:list[str], Pbar: ProgressBar):
                 continue
             DirectionalGraph[(x, y)].append((nx, ny, 1))
 
-        # TODO: helper class for nodes
+
     MinimalNodes:set[tuple] = set([x for x in Graph if len(Graph[x]) > 2])
     MinimalNodes.add(StartNode)
     MinimalNodes.add(GoalNode)
-    # print(Graph)
-    # print(MinimalNodes)
 
-    # reduce graph
-    for node in MinimalNodes:
-        for i in range(len(DirectionalGraph[node])):
-            n = DirectionalGraph[node][i]
-            last = node
-            target = n[:2]
-            distance = n[2]
-            while target not in MinimalNodes:
-                # print(target, distance)
-                for nt in DirectionalGraph[target]:
-                    if nt[:2] != last:
-                        last = target
-                        target = nt[:2]
-                        distance += nt[2]
-                        break
-                else:
-                    break # no further node found, break the while loop
-                continue
-            DirectionalGraph[node][i] = (target[0], target[1], distance)
-    DirectionalGraph = {k:v for k,v in DirectionalGraph.items() if k in MinimalNodes}
-    print(DirectionalGraph)
-
-    solution1 = 0
+    DirectionalGraph = ReduceGraph(DirectionalGraph, MinimalNodes)
     solution1 = FindLongestPathRec(DirectionalGraph, GoalNode, StartNode, set())
 
-    Pbar.StartPuzzle2(0)
-
-    print("Start Puzzle 2")
-    solution2 = 0
-
-    # print(LongestTrails)
+    Pbar.StartPuzzle2(pow(2, 11))
+    
+    Graph = ReduceGraph(Graph, MinimalNodes)
+    for k,v in Graph.items():
+        for node in v:
+            if node[:2] == GoalNode:
+                Graph[k] = [node]
+                break
+        else:
+            continue
+        break
+    
+    solution2 = FindLongestPathRec(Graph, GoalNode, StartNode, set(), Pbar)
 
     Pbar.FinishPuzzle2()
 

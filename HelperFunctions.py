@@ -307,50 +307,30 @@ def SolveThirdDegreePolynomialCoefficients(results:list[int]) -> list[int]:
 
     return coefficients
 
-# Day 23
-def FindLongestHikeTrailRec(map:list[str], currentX:int, currentY:int, Visited:set[tuple], bIgnoreSlopes:bool, last = (0, 0)) -> int:
+# Day 23    
+def ReduceGraph(Graph:dict[tuple,list[tuple]], MinimalNodes:set[tuple]) -> dict[tuple,list[tuple]]:    
+    for node in MinimalNodes:
+        for i in range(len(Graph[node])):
+            n = Graph[node][i]
+            last = node
+            target = n[:2]
+            distance = n[2]
+            while target not in MinimalNodes:
+                # print(target, distance)
+                for nt in Graph[target]:
+                    if nt[:2] != last:
+                        last = target
+                        target = nt[:2]
+                        distance += nt[2]
+                        break
+                else:
+                    break # no further node found, break the while loop
+                continue
+            Graph[node][i] = (target[0], target[1], distance)
+        Graph[node] = [x for x in Graph[node] if x[:2] in MinimalNodes]
+    return {k:v for k,v in Graph.items() if k in MinimalNodes}
     
-    mapTile = map[currentY][currentX]
-    if mapTile == "#":
-        return -1
-    
-    if currentY == len(map) - 1:
-        return 0
-
-    CurrentPos = (currentX, currentY)
-    if CurrentPos in Visited:
-        return -1
-                
-    NewVisited = copy(Visited)
-    NewVisited.add(CurrentPos)
-    
-    if mapTile == "." or bIgnoreSlopes:
-        PossibleSteps = [(0, -1), (1, 0), (0, 1), (-1, 0)]
-    elif mapTile == "^":
-        PossibleSteps = [(0, -1)]
-    elif mapTile == ">":
-        PossibleSteps = [(1, 0)]
-    elif mapTile == "v":
-        PossibleSteps = [(0, 1)]
-    elif mapTile == "<":
-        PossibleSteps = [(-1, 0)]
-
-    options = []
-    for step in PossibleSteps:
-        x = currentX + step[0]
-        y = currentY + step[1]
-        options.append(1 + FindLongestHikeTrailRec(map, x, y, NewVisited, bIgnoreSlopes, CurrentPos))
-    
-    # if len([x for x in options if x > 0]) > 1:
-    #     print(currentX, currentY, options)
-        
-    result = max(options)
-    if result > 0:
-        return result
-    else:
-        return -1
-    
-def FindLongestPathRec(Graph:dict[tuple,tuple], Goal:tuple, Current:tuple, Visited:set[tuple]) -> int:
+def FindLongestPathRec(Graph:dict[tuple,list[tuple]], Goal:tuple, Current:tuple, Visited:set[tuple], Pbar:ProgressBar = None, depth:int = 0) -> int:
     if Current == Goal:
         return 0
     if Current not in Graph:
@@ -361,12 +341,19 @@ def FindLongestPathRec(Graph:dict[tuple,tuple], Goal:tuple, Current:tuple, Visit
 
     options = [0]
     for n in Graph[Current]:
-        npos = (n[0], n[1])
+        npos = n[:2]
         steps = n[2]
         if npos not in Visited:
-            r = FindLongestPathRec(Graph, Goal, npos, NewVisited)
+            r = FindLongestPathRec(Graph, Goal, npos, NewVisited, Pbar, depth+1)
             if r >= 0:
                 options.append(r + steps)
+    
+
+    if depth <= 9:
+        # print(Current, depth)
+        if Pbar != None:
+            Pbar.IncrementProgress()
+    # print(Current, len(Visited), options)
     
     longest = max(options)
     if longest > 0:
