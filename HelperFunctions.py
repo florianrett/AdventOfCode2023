@@ -360,3 +360,61 @@ def FindLongestPathRec(Graph:dict[tuple,list[tuple]], Goal:tuple, Current:tuple,
         return longest
     else:
         return -1
+    
+# day 24
+def FindIntersection(stone1:list[int], stone2:list[int]) -> tuple:
+    # using determinant formula from: https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line
+    x1 = stone1[0]
+    y1 = stone1[1]
+    x2 = stone1[0] + stone1[3]
+    y2 = stone1[1] + stone1[4]
+    x3 = stone2[0]
+    y3 = stone2[1]
+    x4 = stone2[0] + stone2[3]
+    y4 = stone2[1] + stone2[4]
+
+    numX = (x1*y2 - y1*x2) * (x3-x4) - (x1-x2) * (x3*y4 - y3*x4)
+    denom = (x1-x2) * (y3-y4) - (y1-y2)*(x3-x4)
+    numY = (x1*y2 - y1*x2) * (y3-y4) - (y1-y2) * (x3*y4 - y3*x4)
+
+    if denom == 0:
+        # no intersection (lines are parallel)
+        return (False,)
+
+    x = numX / denom
+    y = numY / denom
+
+    time1 = (x - x1) / stone1[3]
+    time2 = (x - x3) / stone2[3]
+    if time1 < 0 or time2 < 0:
+        # intersection lies in the past
+        return (False,)
+
+    return (True, x, y)
+
+def TestHit(stone1:list[int], stone2:list[int]) -> float:
+    p1 = (stone1[0], stone1[1], stone1[2])
+    p2 = (stone2[0], stone2[1], stone2[2])
+    v1 = (stone1[3], stone1[4], stone1[5])
+    v2 = (stone2[3], stone2[4], stone2[5])
+
+    distanceX = p2[0] - p1[0]
+    distanceY = p2[1] - p1[1]
+    distanceZ = p2[2] - p1[2]
+    deltaDistanceX = v1[0] - v2[0]
+    deltaDistanceY = v1[1] - v2[1]
+    deltaDistanceZ = v1[2] - v2[2]
+    # use delta in difference per second to calculate when paths will cross
+    possibleHitTime = 0
+    if deltaDistanceX != 0:
+        possibleHitTime = distanceX / deltaDistanceX
+    elif deltaDistanceY != 0:
+        possibleHitTime = distanceY / deltaDistanceY
+    elif deltaDistanceZ != 0:
+        possibleHitTime = distanceZ / deltaDistanceZ
+    
+    # print(p1, v1, p2, v2)
+    # print(deltaDistanceX, deltaDistanceY, deltaDistanceZ)
+    # print(possibleHitTime)
+
+    return p1[0] + v1[0] * possibleHitTime == p2[0] + v2[0] * possibleHitTime and p1[1] + v1[1] * possibleHitTime == p2[1] + v2[1] * possibleHitTime and p1[2] + v1[2] * possibleHitTime == p2[2] + v2[2] * possibleHitTime 

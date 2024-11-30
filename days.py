@@ -1536,13 +1536,65 @@ def day23(input:list[str], Pbar: ProgressBar):
     return solution1, solution2
 
 def day24(input:list[str], Pbar: ProgressBar):
+    from HelperFunctions import FindIntersection, TestHit
+    from itertools import combinations
+    from numpy import linalg
     
-    Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
+    Pbar.StartPuzzle1(len(input) * len(input))
+
+    lowerBound = 7
+    upperBound = 27
+#    lowerBound = 200000000000000
+#    upperBound = 400000000000000
+
+    hailstones:list[list] = []
+    for line in input:
+        hailstones.append([int(x) for x in re.findall("-?\d+", line)])
+    
+    numIntersections = 0
+    for stone1, stone2 in combinations(hailstones, r=2):
+        intersection = FindIntersection(stone1, stone2)
+        if intersection[0]:
+            x = intersection[1]
+            y = intersection[2]
+            if (lowerBound <= x <= upperBound and lowerBound <= y <= upperBound):
+                numIntersections += 1
+        Pbar.IncrementProgress()
+
     Pbar.StartPuzzle2(0)
+    
+    # transform all hailstones relative to stone0
+    relstones = [[stone[i] - hailstones[0][i] for i in range(6)] for stone in hailstones]
+    # collisions of stone 1 & 2 need to be on the same line through origin
+    # thus c1 = c2 * x
+    # collisions can be written based on their initial p and v, with their respective collision times being unknown
+    # thus p1 + v1 * t1 = (p2 + v2 * t2) * x
+    # breaking this down for all dimensions gives 3 equations to solve for x, t1, t2
+    # a + b * t1 = c * x + d * t2 * x
+    # by substituting y = t2 * x this gives: a + b * t1 = c * x + d * y
+    # --> a = c * x + d * y - b * t1
+    # with a = p1, b = v1, c = p2, d = v2
+
+    p1 = relstones[1][:3]
+    v1 = relstones[1][3:]
+    p2 = relstones[2][:3]
+    v2 = relstones[2][3:]
+    
+    sol = linalg.solve([[p2[0], v2[0], -1*v1[0]], [p2[1], v2[1], -1*v1[1]], [p2[2], v2[2], -1*v1[2]]], p1)
+    x = sol[0]
+    t1 = sol[2]
+    t2 = sol[1] / x
+
+    # knowing the collision times allows to compute c1 and c2 in absolute space
+    c1 = [hailstones[1][i] + t1 * hailstones[1][i+3] for i in range(3)]
+    c2 = [hailstones[2][i] + t2 * hailstones[2][i+3] for i in range(3)]
+
+    velocity = [(c2[i] - c1[i]) / (t2-t1) for i in range(3)]
+    stonepos = [int(c1[i] - velocity[i] * t1) for i in range(3)]
+
     Pbar.FinishPuzzle2()
 
-    return -1, -1
+    return numIntersections, sum(stonepos)
 
 def day25(input:list[str], Pbar: ProgressBar):
     
