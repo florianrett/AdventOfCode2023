@@ -1597,11 +1597,84 @@ def day24(input:list[str], Pbar: ProgressBar):
     return numIntersections, sum(stonepos)
 
 def day25(input:list[str], Pbar: ProgressBar):
+    from collections import Counter
+    import random
+
+    connections:dict[str:set] = {}
+    edges:list = []
+    edgeIndices:dict[str:set] = {}
+    for line in input:
+        components = re.findall("[a-z]+", line)
+        for c in components:
+            if c not in connections:
+                connections[c] = set()
+            if c not in edgeIndices:
+                edgeIndices[c] = set()
+        for c in components[1:]:
+            connections[c].add(components[0])
+            connections[components[0]].add(c)
+            edges.append(components[0] + c)
+            edgeIndices[c].add(len(edges) - 1)
+            edgeIndices[components[0]].add(len(edges) - 1)
+
+    numIterations = 100
+    Pbar.StartPuzzle1(numIterations * 3)
+
+    for j in range(3):
+        edgeUses:dict = {x:0 for x in range(len(edges))}
+        for i in range(numIterations):
+            start = random.choice(list(connections.keys()))
+            target = random.choice(list(connections.keys()))
+            # print(start, target)
+            # BFS to find path between nodes
+            candidates:set = set()
+            current = start
+            visited:dict = {start:start}
+            while current != target:
+                # print(current)
+                for n in connections[current]:
+                    if n not in visited:
+                        visited[n] = current
+                        candidates.add(n)
+                current = candidates.pop()
+            # trace back path to count edges
+            while current != start:
+                prev = visited[current]
+                edgeIdx = edgeIndices[current].intersection(edgeIndices[prev]).pop()
+                # print(edgeIdx, edges[edgeIdx])
+                edgeUses[edgeIdx] = edgeUses[edgeIdx] + 1
+                current = prev
+
+            Pbar.IncrementProgress()
+        
+        # remove the most used edge
+        mostUsedEdge = Counter(edgeUses).most_common(1)
+        # print(mostUsedEdge)
+        nodeA = edges[mostUsedEdge[0][0]][3:]
+        nodeB = edges[mostUsedEdge[0][0]][:3]
+        # print(nodeA, nodeB)
+        connections[nodeA].remove(nodeB)
+        connections[nodeB].remove(nodeA)
     
-    Pbar.StartPuzzle1(len(input))
-    Pbar.IncrementProgress()
+    # Flood search for both nodes of one removed connection
+    subsetSizes = []
+    for node in [nodeA, nodeB]:
+        current = node
+        visited:set = {current}
+        candidates:set = set(connections[node])
+        while candidates:
+            current = candidates.pop()
+            visited.add(current)
+            for n in connections[current]:
+                if n not in visited:
+                    candidates.add(n)
+        subsetSizes.append(len(visited))
+        # print(visited)
+
+    # print(subsetSizes)
+        
     Pbar.StartPuzzle2(0)
     Pbar.FinishPuzzle2()
 
 
-    return -1, "Merry Christmas!"
+    return subsetSizes[0] * subsetSizes[1], "Merry Christmas!"
